@@ -1,0 +1,128 @@
+.wrapper{
+    width: 45%;
+    height: auto;
+    margin: 10px auto;
+    /*border: 1px solid #cbcbcb;*/
+    /*background: white;*/
+}
+
+.comment_form{
+    width: 90%;
+    margin: 10px auto;
+    border: 1px solid #cbcbcb;
+    background: #fafafc;
+    padding: 20px;
+}
+
+.comment_form label{
+    display: block;
+    margin: 5px 0px 5px 0px;
+}
+
+.comment_form input{
+    padding: 5px;
+    margin: 0px auto;
+    width: 100%;
+}
+
+.comment_form textarea{
+    padding: 5px;
+    margin: 0px auto;
+    width:100%;
+}
+
+
+.reply_form_design{
+    width: 80%;
+    margin: 10px auto;
+    /*border: 1px solid green;*/
+    background: #fafafc;
+    padding: 20px;
+}
+
+
+.edit_form{
+    width: 90%;
+    margin: 10px auto;
+    padding: 5px;
+}
+
+.edit_form label{
+    display: block;
+    margin: 5px 0px 5px 0px;
+}
+
+.edit_form input, textarea{
+    padding: 5px;
+    width: 85%;
+    margin: 0px auto;
+}
+
+#submit_btn, #update_btn{
+    padding: 8px 15px;
+    color: white;
+    background: #339;
+    border: none;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+#update_btn {
+    background: #1c7600;
+}
+
+
+#display_area{
+    width:90%;
+    padding-top: 15px;
+    margin: 10px auto;
+}
+
+.comment_box{
+    cursor:default;
+    width:100%;
+    margin: 10px auto;
+    border: 1px solid #cbcbcb;
+    padding: 5px 10px;
+    position: relative;
+}
+
+.delete{
+    position: absolute;
+    top:0px;
+    right:3px;
+    color:red;
+    display:none;
+    cursor: pointer;
+}
+
+.edit{
+    position:absolute;
+    top:0px;
+    right:55px;
+    color:green;
+    display:none;
+    cursor: pointer;
+}
+
+.reply{
+    position:absolute;
+    right:90px;
+    top:0px;
+    color:#339;
+    cursor: pointer;
+}
+
+.comment_box:hover .edit, .comment_box:hover .delete{
+    display: block;
+}
+
+.comment_text{
+    text-align: justify;
+}
+
+.display_name{
+    color:blue;
+    padding: 0px;
+    margin: 0px 0px 5px 0px;
+}

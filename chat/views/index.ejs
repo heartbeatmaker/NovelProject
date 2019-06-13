@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+
+    <title>Node File Uploads</title>
+</head>
+<body>
+<div class="container">
+    <h1>File Upload</h1>
+<!--    ejs 문법 : %를 이용하여 데이터를 주고받는다-->
+<!--    render 함수를 통해 인자로 들어온 값(메시지)이 여기에 렌더링 된다-->
+    <%= typeof msg != 'undefined' ? msg : '' %>
+<!--    upload 메소드를 호출한다-->
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="file-field input-field">
+            <div class="btn grey">
+                <span>File</span>
+                <input name="myImage" type="file">
+            </div>
+            <div class="file-path-wrapper">
+                <input class="file-path validate" type="text">
+            </div>
+        </div>
+        <button type="submit" class="btn">Submit</button>
+    </form>
+    <br>
+    <!--    업로드한 이미지를 표시하는 부분-->
+    <!--    render 함수를 통해 인자로 들어온 값(이미지 파일)이 여기에 렌더링 된다-->
+    <img src="<%= typeof file != 'undefined' ? file : '' %>" class="responsive-img">
+</div>
+
+<script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+</body>
+</html>
