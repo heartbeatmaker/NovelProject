@@ -1,21 +1,25 @@
 <?php
-//require_once 'connect.php';
-//require_once 'log/log.php';
-//
-//if(isset($_POST['signout_btn'])){
-//
-//    $email = $_SESSION['email'];
-//    push_log("email=".$_SESSION['email'] , "index logout");
-//
-//    //해당 사용자의 db정보를 수정한다
-//    $query_deleteInfo = "UPDATE userinfo SET session_id=null WHERE email='$email'";
-//    mysqli_query($db, $query_deleteInfo);
-//
-//    $_SESSION = array(); //세션 변수 전체를 초기화한다
-//
-//    echo "<script>alert(\"로그아웃 되었습니다\");</script>";
-//
-//?>
+require_once  '/usr/local/apache/security_files/connect.php';
+require_once 'session.php';
+require_once 'log/log.php';
+
+//var_dump($_SESSION);
+
+if(isset($_POST['signout_btn'])) {
+
+    $email = $_SESSION['email'];
+    push_log($email . " sign out");
+
+    //해당 사용자의 db정보를 수정한다
+    global $db;
+    $query_deleteInfo = "UPDATE novel_userinfo SET session_id=null WHERE email='$email'";
+    mysqli_query($db, $query_deleteInfo);
+
+    $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+    echo "<script>alert(\"Bye! \");</script>";
+}
+?>
 
 
 <!doctype html>
@@ -118,14 +122,42 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
                     </a>
                 </form>
-                <button class="btn btn-outline-info my-2 my-sm-0" onclick="location.href='login/login.php'" style="margin-right: 20px">Sign-in</button>
+                <div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Write
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Create a New Story</a>
+                            <a class="dropdown-item" href="#">My Stories</a>
+                        </div>
+                    </div>
+                    <?php
+                    if(isset($_SESSION['email'])){
+                        echo '
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                '.$_SESSION['user'].'
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">My Page</a>
+                                <form method="post" action="index.php"><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
+                            </div>
+                        </div>
+                        ';
+                    }else{
+                        echo '<button class="btn btn-outline-secondary" onclick="location.href=\'login/login.php\'" style="margin-right: 20px">Sign-in</button>';
+                    }
+                    ?>
+
+                </div>
             </div>
         </header>
 
         <div class="nav-scroller py-1 mb-2">
             <nav class="nav d-flex justify-content-between bg-light">
                 <a class="p-2 text-muted" style="margin-left: 80px;" href="#">Fandom</a>
-                <a class="p-2 text-muted" href="#">Fiction</a>
+                <a class="p-2 text-muted" href="boards/mainPage.php">Fiction</a>
                 <a class="p-2 text-muted" href="#">Non-fiction</a>
                 <a class="p-2 text-muted" href="#">Community</a>
                 <a class="p-2 text-muted" href="#">Hot 100</a>
@@ -155,8 +187,9 @@ background-image: url('images/book.jpg')">
                     echo
                     '<div class="hot_post">
                         <div class="card flex-md-row mb-4 box-shadow h-md-250">
+                            <img src="images/1.jpg" style="border-radius: 0 3px 3px 0; width:150px; height:180px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
-                                <strong class="d-inline-block mb-2 text-primary">World</strong>
+                                <strong class="d-inline-block mb-2 text-primary">Non-fiction</strong>
                                 <h3 class="mb-0">
                                     <a class="text-dark" href="#">Featured post</a>
                                 </h3>
@@ -164,11 +197,11 @@ background-image: url('images/book.jpg')">
                                 <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
                                 <a href="#">Continue reading</a>
                             </div>
-                            <img src="images/1.jpg" style="border-radius: 0 3px 3px 0; width:180px; height:180px; margin:10px" alt="Card image cap"/>
                         </div>
                     </div>';
                 }
                 ?>
+
 
             </div><!-- /.blog-main -->
 
@@ -248,8 +281,27 @@ background-image: url('images/book.jpg')">
 
 </body>
 <script>
-    $(document).ready(function () {
+    // function signout(){
+    //
+    //     console.log('signout pressed');
+    //
+    //     var form = document.createElement("form");
+    //     form.setAttribute("method", "post");
+    //     form.setAttribute("action", "index.php");
+    //
+    //     //히든으로 값을 주입시킨다.
+    //     var hiddenField = document.createElement("input");
+    //     hiddenField.setAttribute("type", "hidden");
+    //     hiddenField.setAttribute("value", "signout");
+    //     form.appendChild(hiddenField);
+    //
+    //     document.body.appendChild(form);
+    //     form.submit();
+    // }
+</script>
 
+<script>
+    $(document).ready(function() {
 
         //무한 스크롤
         $(document).scroll(function() { //스크롤 함수

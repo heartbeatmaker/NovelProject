@@ -1,5 +1,5 @@
 <?php
-require_once '../connect.php';
+require_once '../session.php';
 
 
 if(isset($_POST['signout_btn'])){
@@ -54,7 +54,7 @@ if(isset($_POST['signout_btn'])){
                         <a class="nav-link" href="../portfolio/portfolio.php">Portfolio</a>
                     </li>
                     <li class="nav-item" style="padding-right: 20px">
-                        <a class="nav-link" href="../reply_test/main.php">Blog</a>
+                        <a class="nav-link" href="../boards/main.php">Blog</a>
                     </li>
                     <li class="nav-item dropdown" style="padding-right: 25px">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

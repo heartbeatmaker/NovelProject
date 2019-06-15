@@ -2,7 +2,7 @@
     session_start();
 
     require_once "../log/log.php";
-    require_once "../connect.php";
+    require_once "../session.php";
 
     $id = $_GET['id'];
 

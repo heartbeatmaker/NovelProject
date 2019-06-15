@@ -1,5 +1,5 @@
 <?php
-    require_once '../connect.php';
+    require_once '../session.php';
 
     if(!isset($_GET['page'])){
         $page = 1;
