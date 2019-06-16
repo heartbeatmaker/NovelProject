@@ -15,7 +15,7 @@ if(isset($_POST['signin_btn'])){
 
 //    $password = md5($password);
     global $db;
-    $sql = "SELECT*FROM novel_userinfo WHERE email='$email' AND password ='$hash'";
+    $sql = "SELECT*FROM novelProject_userInfo WHERE email='$email' AND password ='$hash'";
     $result = mysqli_query($db, $sql);
 
     //해당하는 id, password가 있으면
@@ -42,7 +42,7 @@ if(isset($_POST['signin_btn'])){
         //쿠키에 session id를 저장한다. 7일간
         setcookie("session_id", $session_id, $expiry_date, "/");
         //db의 해당 아이디 row에 session id와 유효기간을 저장한다
-        $sql_update = "UPDATE novel_userinfo SET session_id='$session_id' WHERE email='$email'";
+        $sql_update = "UPDATE novelProject_userInfo SET session_id='$session_id' WHERE email='$email'";
         mysqli_query($db, $sql_update);
 
 //            7일간 쿠키를 저장한다

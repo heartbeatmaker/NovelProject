@@ -1,34 +1,73 @@
 <?php
-//
-//require_once '../session.php'; //db에 연결, timezone 설정
-//require_once 'functions.php'; //참조할 메소드가 있는 곳
-//
-//include 'server.php';//댓글 저장을 담당
-//
-//
-////앞에서 form 에 담아 보내지 않았으므로, GET을 써야함
-//$id = $_GET['id'];
-//
-////글 삭제 버튼을 누르면
-//if(isset($_POST['post_delete_btn'])){
-//
-//    //db에서 해당 데이터 삭제 후, 글 목록으로 이동
-//    $sql_info = "DELETE FROM blog_post WHERE id='$id'";
-//    mysqli_query($db, $sql_info);
-//
-//    header("location: main.php");
-//
-//    //글 수정 버튼을 누르면
-//}else if(isset($_POST['post_edit_btn'])){
-//
-//    //수정 화면으로 이동(GET 방식으로 전달)
-//    header("location: edit_post.php?id=$id");
-//
-//    //글 목록 버튼을 누르면
-//}
-//
-//
-//?>
+    require_once  '/usr/local/apache/security_files/connect.php';
+    require_once '../session.php';
+    require_once '../log/log.php';
+
+    //이 소설이 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
+    $episode_db_id='';
+    if(isset($_GET['ep_id'])){
+        $episode_db_id = $_GET['ep_id'];
+    }
+    push_log("received db_id=".$episode_db_id);
+
+    //정보 추출
+    $sql = "SELECT*FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
+
+    global $db;
+    $result = mysqli_query($db, $sql);
+
+    $storyTitle='';
+    $episodeTitle='';
+    $content='';
+    $author_username='';
+    $author_email='';
+    $publishedTime='';
+    $story_db_id='';
+
+    if(mysqli_num_rows($result)==1){
+        $row = mysqli_fetch_array($result);
+
+        $episodeTitle = $row['title'];
+        $storyTitle = $row['storyTitle'];
+        $content=$row['content'];
+        $author_username=$row['author_username'];
+        $author_email=$row['author_email'];
+        $publishedTime =$row['date'];
+        $story_db_id=$row['story_db_id'];
+
+        //사용자가 url을 직접 입력하여 이 페이지에 들어왔을 경우, 로그인 페이지로 보낸다
+        if($author_email!=$_SESSION['email']){
+            header("location: ../login/login.php"); //redirect
+        }
+    }
+
+    //글 삭제 버튼을 누르면
+    if(isset($_POST['post_delete_btn'])){
+
+        //episode db에서 해당 데이터 삭제
+        $sql_episodeInfo = "DELETE FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
+        mysqli_query($db, $sql_episodeInfo);
+
+        //story db에서 episode 개수 수정
+        $sql = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
+        $result = mysqli_query($db, $sql);
+        $row_story = mysqli_fetch_array($result);
+        $numberOfEpisode = $row_story['numberOfEpisode']-1;
+
+        $sql_storyInfo = "UPDATE novelProject_storyInfo SET numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
+
+        header("location: ../index.php");
+    }
+
+    //글 수정 버튼을 누르면
+    if(isset($_POST['post_edit_btn'])){
+
+        //수정 화면으로 이동(GET 방식으로 전달)
+        header("location: page_writeNewEpisode.php?id=$story_db_id&ep_id=$episode_db_id&mode=edit");
+
+    }
+
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -46,6 +85,7 @@
     <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
 
     <!--    stylesheets-->
+    <link rel="stylesheet" href="../css/write/button.css">
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -66,16 +106,11 @@
     <div class="container" style="margin-top: 20px">
         <header class="blog-header">
             <div class="row flex-nowrap justify-content-between align-items-center">
-                <div class="col-4">
-                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman;" href="../index.php">ReadMe</a>
+                <div class="col-8" >
+                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
+                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php"> | <?php echo $storyTitle.' by '.$author_username?></a>
                 </div>
 
-                <form class="form-inline">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <a class="text-muted" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
-                    </a>
-                </form>
                 <button class="btn btn-outline-info my-2 my-sm-0" onclick="location.href='../login/login.php'" style="margin-right: 20px">Sign-in</button>
             </div>
         </header>
@@ -98,11 +133,12 @@
                 //    $row = mysqli_fetch_array($result);
                 //    ?>
 
-                <div style="font-size: 20px; font-family: 'Times New Roman'; color: grey;">Lord of the Rings by JRR Tolkin</div>
-                <h1><?php echo "Title: ".$row['title']?></h1>
+<!--                <div style="font-size: 20px; font-family: 'Times New Roman'; color: grey;">Lord of the Rings by JRR Tolkin</div>-->
+                <h1><?php echo $episodeTitle?></h1>
                 <?php
-                //관리자만 글 수정삭제 가능
-                if(isset($_SESSION['email'])&& $_SESSION['email']=='admin@gmail.com'){
+
+                //글쓴이만 수정삭제 가능
+                if(isset($_SESSION['email'])&& $_SESSION['email']==$author_email){
                     echo '
                     <div style="float:right; margin-top: 20px;">
                     <form method="post" action="">
@@ -113,31 +149,17 @@
                 }
                 ?>
 
-                <div style="float:right; margin-top: 20px;">
-                    <form method="post" action="">
-                        <button class= "btn btn-outline-secondary" type="submit" name="post_edit_btn">Edit</button>
-                        <button class= "btn btn-outline-warning" type="submit" name="post_delete_btn">Delete</button>
-                    </form>
-                </div>
-                <div style="color: #b2b2b2; margin-top: 20px;">
-                    <p>2019.11.2<br>
-                        2019.11.5 [edit]</p>
-                </div>
-
                    <div style="color: #b2b2b2; margin-top: 20px;">
-                        <p><?php echo $row['date']?>
+                        <p>Published: <?php echo $publishedTime?>
                         <br>
                         <?php
-                        if(isset($row['update_time'])){
-                            echo $row['update_time']." [edit]";
+                        if(isset($row['editTime'])){
+                            echo $row['editTime']." [edit]";
                         }
                         ?></p>
                    </div>
                 <div>
-
-                    Qabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;abaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjet;slabaslkjetsl
-
-                    <?php echo $row['content']?>
+                    <?php echo $content?>
                 </div>
             </div>
 
@@ -145,11 +167,21 @@
 <!--            각종 버튼-->
 
 
-            <nav class="nav d-flex justify-content-center bg-light" style="margin:0px auto; width:90%;">
-                <a class="p-3 text-muted" style="font-size: 20px" href="#">Like</a>
-                <a class="p-3 text-muted" style="font-size: 20px" href="#">Bookmark</a>
-                <a class="p-3 text-muted" style="font-size: 20px" href="#">Subscribe</a>
-                <a class="p-3 text-muted" style="font-size: 20px" href="#">Support</a>
+            <nav class="nav d-flex justify-content-center" style="margin:0px auto; width:90%;">
+                <button type="button" class="btn-like" style="margin-right: 40px">
+                    <i class="fa fa-heart"></i>
+                    <span>Like</span>
+                </button>
+                <button type="button" class="btn-like" style="margin-right: 40px">
+                    <i class="fa fa-bookmark"></i>
+                    <span>Bookmark</span>
+                </button>
+                <button type="button" class="btn-like">
+                    <i class="fa fa-share-alt"></i>
+                    <span>Share</span>
+                </button>
+<!--                <a class="p-3 text-muted" style="font-size: 20px;" href="#">Subscribe</a>-->
+<!--                <a class="p-3 text-muted" style="font-size: 20px" href="#">Support</a>-->
             </nav>
 
             <div style="text-align: center; margin-top: 50px">
@@ -200,7 +232,37 @@
 <!--    <div class="gobottom" style="position: fixed; bottom: 50px; right: 50px">-->
 <!--        <a href class="btn btn-outline-info my-2 my-sm-0">BTM</a>-->
 <!--    </div>-->
+<script>
+$(document).ready(function(){
 
+    $('.btn-like').click(function(){
+        $(this).toggleClass('liked');
+    });
+
+    $('.pp-bookmark-btn').click(function() {
+            var btn = $(this);
+
+            var context = $(this).data("context");
+            var contextAction = $(this).data("context-action");
+            var contextId = $(this).data("context-id");
+            // $('#log').html(context + " " + contextAction + " " + contextId )
+
+            // if( btn.data('state') ) {
+            //    btn.data('state', false);
+            if (btn.hasClass("active")) {
+                btn.removeClass("active")
+                // $getJSON
+                //btn.html(bookmarkOff);
+            } else {
+                // btn.data('state', true);
+                btn.addClass("active");
+                //btn.html(bookmarkOn);
+            };
+        });
+
+});
+
+</script>
 
 
 </body>

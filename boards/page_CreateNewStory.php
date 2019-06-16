@@ -1,3 +1,66 @@
+<?php
+    require_once  '/usr/local/apache/security_files/connect.php';
+    require_once '../session.php';
+    require_once '../log/log.php';
+
+    //db에 저장된 fiction 장르를 가져온다
+    $board_name = 'fiction';
+    $genre ='';
+    $sql = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
+
+    global $db;
+    $result = mysqli_query($db, $sql);
+
+    if(mysqli_num_rows($result)==1){
+        $row = mysqli_fetch_array($result);
+        $genre_string = $row['category'];
+    }
+
+//    var_dump($_SESSION);
+
+    if(isset($_POST['btn_submit'])){
+
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $genre = $_POST['genre'];
+        $author_email = $_SESSION['email'];
+        if(isset($_POST['anonymous'])){
+            $author_username = $_POST['anonymous'];
+        }else{
+            $author_username = $_SESSION['user'];
+        }
+        $isCompleted = 'N';
+        $date = date("Y/m/d");
+
+//        push_log('title='.$title);
+//        push_log('description='.$description);
+//        push_log('genre='.$genre);
+//        push_log('author_email='.$author_email);
+//        push_log('author_name='.$author_username);
+//        push_log('isCompleted='.$isCompleted);
+//        push_log('date='.$date);
+
+        $sql_storyInfo = "INSERT INTO novelProject_storyInfo(title, description, genre, author_email, author_username, 
+isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$description','$genre','$author_email'
+,'$author_username','$isCompleted','$date','$date', 0)";
+
+//        for($i=0; $i<1000; $i++){
+//            mysqli_query($db, $sql_storyInfo);
+//        }
+
+        $result = mysqli_query($db, $sql_storyInfo);
+
+        if($result){
+
+            $inserted_id = mysqli_insert_id($db);
+            push_log('query succeeded. db id='.$inserted_id);
+
+            header("location: page_writeNewEpisode.php?id=$inserted_id"); //redirect
+        }
+    }
+
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,14 +72,12 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 
-    <!--    dataTables-->
-    <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
-
     <!--    stylesheets-->
     <link href="../css/write/form-validation.css" rel="stylesheet">
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>-->
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"/>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
@@ -47,9 +108,12 @@
 
 <!--        북커버 삽입-->
         <aside class="col-md-3 blog-sidebar">
-            <form style="margin-top: 50px; margin-bottom:30px; text-align: center; background-color: lightgrey; width: 200px; height: 280px;">
-                <a href="#"><h5>Add a Cover</h5></a>
-            </form>
+            <div style="text-align: center">
+                <img src="../images/1.jpg" height="300" width="200" style="margin-bottom: 20px"/>
+                <button class="btn btn-outline-secondary my-2 my-sm-0" id="insert_image">Add a Cover</button>
+                <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="change_image">Change</button>-->
+                <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="remove_image">Remove</button>-->
+            </div>
         </aside><!-- /.blog-sidebar -->
 
 <!--        공간띄우기용-->
@@ -59,11 +123,11 @@
         <div class="col-md-8 blog-main" id="hot_post_list">
 
             <h4 style="margin-bottom: 30px">Story Details</h4>
-            <form class="needs-validation" novalidate>
+            <form action="" method="post" class="needs-validation" novalidate>
 
                 <div>
                     <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" placeholder="" value="Untitled Story" required>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Untitled Story" required>
                     <div class="invalid-feedback">
                         Title is required.
                     </div>
@@ -72,7 +136,7 @@
 
                 <div class="mb-3" style="margin-top: 30px;">
                     <label for="description">Description</label>
-                    <textarea type="text" class="form-control" id="description" rows="5" required></textarea>
+                    <textarea type="text" class="form-control" id="description" name="description" rows="5" required></textarea>
                     <div class="invalid-feedback">
                         Please enter description of the story.
                     </div>
@@ -80,19 +144,19 @@
 
                 <div class="row">
                     <div class="col-md-5 mb-3">
-                        <label for="country">Genre</label>
-                        <select class="custom-select d-block w-100" id="country" required>
+                        <label for="genre">Genre</label>
+                        <select class="custom-select d-block w-100" id="genre" name="genre" required>
                             <option value="">Choose...</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
-                            <option>Comedy</option>
+
+                            <?php
+                            //string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
+                            $genre_split_array = explode(';', $genre_string);
+
+                            for($i=0; $i<count($genre_split_array); $i++){
+                                echo '<option>'.$genre_split_array[$i].'</option>';
+                            }
+                            ?>
+
                         </select>
                         <div class="invalid-feedback">
                             Please select a valid country.
@@ -103,12 +167,12 @@
 
                 <hr class="mb-4">
                 <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="same-address">
-                    <label class="custom-control-label" for="same-address">Anonymous</label>
+                    <input type="checkbox" class="custom-control-input" name="anonymous" id="anonymous" value="Anonymous">
+                    <label class="custom-control-label" for="anonymous">Anonymous</label>
                 </div>
 
                 <hr class="mb-4">
-                <button class="btn btn-info btn-lg btn-block" type="submit">Done</button>
+                <button class="btn btn-info btn-lg btn-block" type="submit" name="btn_submit" value="true">Done</button>
             </form>
 
         </div><!-- /.blog-main -->
@@ -125,17 +189,154 @@
 <!--    </footer>-->
 
 </body>
-<script>
-    $(document).ready(function () {
-
-        //스크롤 맨 위로
-        var speed = 100; // 스크롤속도
-        $(".gotop").css("cursor", "pointer").click(function()
-        {
-            $('body, html').animate({scrollTop:0}, speed);
-        });
-
-    });
-</script>
 
 </html>
+
+
+<div id="imageModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add a Cover</h4>
+        </div>
+        <div class="modal-body">
+            <form id="image_form" method="post" enctype="multipart/form-data">
+                <p><label>Select Image</label>
+                    <input type="file" name="image" id="image"/>
+                </p><br />
+                <input type="hidden" name="action" id="action" value="insert"/>
+                <input type="hidden" name="image_id" id="image_id"/>
+                <input type="submit" name="insert" id="insert" value="insert" class="btn btn-info"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $(document).ready(function(){
+
+        //db에 저장되어 있는 모든 이미지를 표에 넣어서 화면에 출력한다
+        // fetch_data();
+        //
+        // function fetch_data(){
+        //     var action = "fetch";
+        //     $.ajax({
+        //         url:"action.php",
+        //         method:"post",
+        //         data:{action:action},
+        //         success:function(data){ //data= 완성된 표
+        //             $('#image_data').html(data);
+        //             //html(data): image_data 요소 안에 내용(=data)을 넣는다
+        //         }
+        //     })
+        // }
+
+        //추가 버튼을 누르면 - 모달 창을 띄워준다
+        //모달 - 팝업 차이: 모달은 페이지 안에 존재하는 하나의 레이어. 사용자가 block할 수 없음
+        //팝업은 별도의 창을 띄우는 것. 현재 브라우저 창에 상관없이 제어가 가능
+        //브라우저 옵션을 통해 열지 않도록 강제할 수 있음
+        $('#insert_image').click(function(){
+            $('#imageModal').modal('show');
+            $('#image_form')[0].reset(); //reset(): form 양식 안의 모든 요소를 초기화하는 js 메소드
+            $('.modal-title').text("Add an Image");
+
+            //각 양식에 값을 넣는다
+            $('#image_id').val('');
+            $('#action').val('insert');
+            $('#insert').val('insert');
+        });
+
+
+        $('#image_form').submit(function(event){ //js에서는 id를 사용하여 form 객체를 가져오는 것이 가능하다
+
+            //클릭이벤트 외에 별도의 브라우저 행동을 막기 위해 사용 ex) 스크롤이 위로 올라가는 것을 막음
+            event.preventDefault();
+
+            //파일의 이름을 가져온다
+            var image_name = $('#image').val();
+
+            //이미지 선택 했는지 확인
+            if(image_name == ''){
+                alert("Please Select Image");
+                return false;
+            }
+            //이미지 이름이 있다면, 서버로 요청을 보낸다
+            else{
+
+                //파일의 확장자를 확인한다
+                //파일 이름을 . 단위로 분리한 후, 소문자 형태의 확장자만 남긴다
+                //pop(): 배열의 마지막 요소를 제거한 후, 그 요소를 반환한다
+                var extension = $('#image').val().split('.').pop().toLowerCase();
+
+                //jquery inArray = js indexOf
+                //배열 안에 특정한 값이 있는지 검사한다
+                //gif, png, jpg, jpeg 에 해당하는 확장자가 없다면
+                if(jQuery.inArray(extension, ['gif', 'png', 'jpg', 'jpeg']) == -1){
+                    alert("Invalid Image File");
+                    $('#image').val('');
+                    return false;
+                }
+                //유효한 확장자라면, 서버에 요청한다
+                else{
+                    $.ajax({
+                        url:"action.php",
+                        method: "POST",
+                        //formData: 파일을 전송할 때, 직접 폼 형태(key/value)로 보낼 수 있게 해주는 객체
+                        data: new FormData(this), //formData 객체에 image_form 의 값을 넣어준다
+                        //formData로 파일을 전송할 때, contentType과 processData는 아래와 같이 설정해준다
+                        contentType:false,
+                        processData:false,
+                        success:function(data){
+                            alert(data); //이건 왜하지?
+                            fetch_data(); //이미지를 포함한 새로운 행을 화면에 표시한다
+                            $('#image_form')[0].reset();
+                            $('#imageModal').modal('hide');
+                        }
+                    });
+                }
+            }
+        });
+
+        //이미지 변경 버튼을 눌렀을 때
+        $(document).on('click', '.update', function(){
+
+            //각종 속성 변경
+            //image_id key에 해당 이미지의 id를 값으로 넣어준다. db에서 찾아야 하므로. 원래는 값이 비어있음
+            $('#image_id').val($(this).attr("id"));
+            $('#action').val("update");
+            $('.modal-title').text("Update Image");
+            $('#insert').val("Update");
+            $('#imageModal').modal("show");
+
+            //db에서 이미지 이름만 바꿨는데 왜 화면이 업데이트되지???
+            //fetch_data() 해야되는거 아님?
+        });
+
+        //이미지 삭제 버튼을 눌렀을 때
+        $(document).on('click', '.delete', function() {
+
+            //각종 속성 변경
+            //image_id key에 해당 이미지의 id를 값으로 넣어준다. db에서 찾아야 하므로
+            var image_id = $(this).attr("id");
+            var action = "delete";
+            if(confirm("Want to remove this image?")){
+                $.ajax({
+                    url:"action.php",
+                    method:"POST",
+                    data:{image_id:image_id, action:action},
+                    success:function(data){
+                        alert(data);
+                        fetch_data(); //화면의 표를 새로고침한다
+                    }
+                })
+            }
+            else{
+                return false;
+            }
+        })
+    });
+</script>

@@ -15,7 +15,7 @@ if(isset($_POST['register'])){
     $result_isEmailValid = ''; //같은 메일이 있는지 없는지 결과값
 
     global $db;
-    $sql = "SELECT*FROM novel_userinfo WHERE email='$email_input'";
+    $sql = "SELECT*FROM novelProject_userInfo WHERE email='$email_input'";
     $result = mysqli_query($db, $sql);
 
 //            mysqli_num_rows() : 행의 개수

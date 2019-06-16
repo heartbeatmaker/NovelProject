@@ -12,7 +12,7 @@ if(isset($_POST['signout_btn'])) {
 
     //해당 사용자의 db정보를 수정한다
     global $db;
-    $query_deleteInfo = "UPDATE novel_userinfo SET session_id=null WHERE email='$email'";
+    $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
     mysqli_query($db, $query_deleteInfo);
 
     $_SESSION = array(); //세션 변수 전체를 초기화한다
@@ -37,6 +37,7 @@ if(isset($_POST['signout_btn'])) {
     <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
 
 <!--    stylesheets-->
+    <link rel="stylesheet" href="css/write/items.css">
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -124,19 +125,19 @@ if(isset($_POST['signout_btn'])) {
                 </form>
                 <div>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Write
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#">Create a New Story</a>
-                            <a class="dropdown-item" href="#">My Stories</a>
+                            <a class="dropdown-item" href="boards/page_CreateNewStory.php">Create a New Story</a>
+                            <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>
                         </div>
                     </div>
                     <?php
                     if(isset($_SESSION['email'])){
                         echo '
                         <div class="btn-group">
-                            <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
@@ -185,20 +186,21 @@ background-image: url('images/book.jpg')">
 
                 for($i=0; $i<10; $i++){
                     echo
-                    '<div class="hot_post">
-                        <div class="card flex-md-row mb-4 box-shadow h-md-250">
-                            <img src="images/1.jpg" style="border-radius: 0 3px 3px 0; width:150px; height:180px; margin:10px" alt="Card image cap"/>
+                    '<div class="list_item" onclick="location.href=\'read_post.php\'" style="margin-bottom: 20px;">
+                        <div class="card flex-md-row box-shadow h-md-250">
+                            <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
-                                <strong class="d-inline-block mb-2 text-primary">Non-fiction</strong>
-                                <h3 class="mb-0">
-                                    <a class="text-dark" href="#">Featured post</a>
-                                </h3>
-                                <div class="mb-1 text-muted">Nov 12</div>
+                                <strong class="d-inline-block mb-2 text-primary">Fiction</strong>
+                                <h4 class="mb-0">
+                                    <a class="text-dark">Lord of the Rings Chapter '.$i.'</a>
+                                </h4>
+                                <div class="mb-1 text-muted">by Jane Doe</div>
                                 <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
-                                <a href="#">Continue reading</a>
+                               <div style="margin-top: 10px">2000 likes | 100 comments</div>
                             </div>
+             
                         </div>
-                    </div>';
+                     </div>';
                 }
                 ?>
 
@@ -217,7 +219,7 @@ background-image: url('images/book.jpg')">
                         <?php
                         for($i=0; $i<5; $i++) {
                                 echo '
-                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
                                     <div>
                                         <h6 class="my-0">Harry Potter - '.$i.'화</h6>
                                         <small class="text-muted">J.K. Rowling</small>
@@ -250,7 +252,7 @@ background-image: url('images/book.jpg')">
                         <?php
                         for($i=0; $i<5; $i++) {
                             echo '
-                                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
                                     <div>
                                         <h6 class="my-0">Lord of the Rings - '.$i.'화</h6>
                                         <small class="text-muted">J.K. Rowling</small>

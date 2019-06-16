@@ -1,3 +1,91 @@
+<?php
+    require_once  '/usr/local/apache/security_files/connect.php';
+    require_once '../session.php';
+    require_once '../log/log.php';
+
+    //이 소설이 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
+    $story_db_id='';
+    if(isset($_GET['id'])){
+        $story_db_id = $_GET['id'];
+    }
+    push_log("received db_id=".$story_db_id);
+
+    //제목추출
+    $sql = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
+
+    global $db;
+    $result = mysqli_query($db, $sql);
+
+    $storyTitle='';
+    $author_username='';
+    $author_email='';
+    $numberOfEpisode='';
+    if(mysqli_num_rows($result)==1){
+        $row = mysqli_fetch_array($result);
+        $storyTitle = $row['title'];
+        $author_username=$row['author_username'];
+        $author_email=$row['author_email'];
+        $numberOfEpisode=$row['numberOfEpisode']+1;
+
+        //사용자가 url을 직접 입력하여 이 페이지에 들어왔을 경우, 로그인 페이지로 보낸다
+        if($author_email!=$_SESSION['email']){
+            header("location: ../login/login.php"); //redirect
+        }
+    }
+
+    if(isset($_POST['btn_submit'])){
+
+        $episodeTitle = $_POST['title'];
+        $content = $_POST['content'];
+
+        $time = date("Y-m-d H:i:s");
+        $date = date("Y/m/d");
+
+            push_log('episodeTitle='.$episodeTitle);
+            push_log('content='.$content);
+            push_log('storyTitle='.$storyTitle);
+            push_log('author_email='.$author_email);
+            push_log('author_name='.$author_username);
+            push_log('time='.$time);
+            push_log('date='.$date);
+            push_log('noOfEpisodes + 1='.$numberOfEpisode);
+
+        $sql_episodeInfo = "INSERT INTO novelProject_episodeInfo(title, content, storyTitle, author_email, author_username, date, story_db_id)VALUES
+    ('$episodeTitle','$content','$storyTitle','$author_email','$author_username','$time','$story_db_id')";
+
+        $sql_storyInfo = "UPDATE novelProject_storyInfo SET lastUpdate='$date', numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
+
+        //story db 업데이트
+        $result_storyDB = mysqli_query($db, $sql_storyInfo);
+
+        //episode 저장
+        $result_episodeDB = mysqli_query($db, $sql_episodeInfo) or die(mysqli_error($db));
+
+        //        for($i=0; $i<1000; $i++){
+        //            mysqli_query($db, $sql_storyInfo);
+        //        }
+
+        if($result_storyDB){
+            push_log('story query succeeded');
+
+            if($result_episodeDB){
+
+                $inserted_id = mysqli_insert_id($db);
+                push_log('episode query succeeded. db id='.$inserted_id);
+
+                header("location: read_post.php?ep_id=$inserted_id"); //redirect
+
+            }else{
+                push_log('error: episode');
+            }
+        }else{
+            push_log('error: story');
+        }
+    }
+
+?>
+
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -33,7 +121,7 @@
     <header class="blog-header py-3">
         <div class="row flex-nowrap justify-content-between align-items-center">
             <div class="col-8" style="font-size: 30px; font-family: Times New Roman;">
-                <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | Lord of the Rings
+                <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | <?php echo $storyTitle?>
             </div>
             <div>
                 <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='mainPage.php'">Cancel</button>
@@ -48,23 +136,23 @@
         <!--        세부사항-->
         <div class="col-md-10 blog-main" style="margin:0px auto">
 
-            <form class="needs-validation" novalidate>
+            <form method="post" action="" class="needs-validation" novalidate>
 
                 <div>
-                    <input type="text" class="form-control" id="title" placeholder="Title" value="" required>
+                    <input type="text" class="form-control" name="title" id="title" placeholder="Title" required>
                     <div class="invalid-feedback">
                         Title is required.
                     </div>
                 </div>
 
                 <div class="mb-3" style="margin-top: 30px;">
-                    <textarea type="text" class="form-control" id="content" required></textarea>
+                    <textarea type="text" class="form-control" name="content" id="content" required></textarea>
                     <div class="invalid-feedback">
-                        Please enter description of the story.
+                        Content is required.
                     </div>
                 </div>
 
-                <button class="btn btn-info btn-lg btn-block" type="submit" style="margin-top: 50px">Publish</button>
+                <button class="btn btn-info btn-lg btn-block" name="btn_submit" value="true" type="submit" style="margin-top: 50px">Publish</button>
             </form>
 
 

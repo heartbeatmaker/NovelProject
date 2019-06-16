@@ -11,7 +11,7 @@ if(isset($_POST['signup_btn'])){
     $password = ($_POST['password']);
 
     global $db;
-    $sql = "SELECT*FROM novel_userinfo WHERE email='$email'";
+    $sql = "SELECT*FROM novelProject_userInfo WHERE email='$email'";
     $result = mysqli_query($db, $sql);
 
 //            mysqli_num_rows() : 행의 개수
@@ -28,7 +28,7 @@ if(isset($_POST['signup_btn'])){
         $hash = md5($password);
 
 //                $password = md5($password); //hash password before storing for security purposes
-        $sql_info = "INSERT INTO novel_userinfo(email, password, username)VALUES('$email','$hash','$username')";
+        $sql_info = "INSERT INTO novelProject_userInfo(email, password, username)VALUES('$email','$hash','$username')";
         mysqli_query($db, $sql_info);
         $_SESSION['message'] = "You are logged in";
 

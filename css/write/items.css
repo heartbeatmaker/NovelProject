@@ -1,0 +1,14 @@
+.list_item{
+    border:2px solid transparent;
+}
+
+.list_item:hover {
+    border-color: #1d2124;
+    border-radius: 0.5em;
+}
+
+
+.list_item_sm:hover {
+    border-color: #1d2124;
+    border-radius: 0.5em;
+}

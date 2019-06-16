@@ -11,7 +11,7 @@
 
         //db에  세션 아이디를 가진 사용자가 있는지 확인한다
         $session_id = $_COOKIE['session_id'];
-        $sql_checkAutoLogin = "SELECT*FROM novel_userinfo WHERE session_id='$session_id'";
+        $sql_checkAutoLogin = "SELECT*FROM novelProject_userInfo WHERE session_id='$session_id'";
 
         global $db;
         $result = mysqli_query($db, $sql_checkAutoLogin);

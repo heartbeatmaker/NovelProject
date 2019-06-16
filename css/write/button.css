@@ -1,0 +1,113 @@
+/*like button*/
+
+
+.btn-like {
+    border: 0px;
+    background-color: transparent;
+    /*text-decoration: none;*/
+    /*padding: 1rem;*/
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+    display: inline-block;
+    /*border-radius: 3rem;*/
+    color: #8a8a8a;
+    transition: all ease 0.4s;
+}
+
+
+.btn-like span {
+    margin-left: 0.5rem;
+}
+
+.btn-like .fa,
+.btn-like span {
+    transition: all ease 0.4s;
+    font-size: 2em;
+}
+
+.btn-like:focus {
+    background-color: transparent;
+}
+
+.btn-like:focus .fa,
+.btn-like:focus span {
+    /*color: #8a8a8a;*/
+}
+
+.btn-like:hover {
+    /*border-color: #cc4b37;*/
+    background-color: transparent;
+}
+
+.btn-like:hover .fa,
+.btn-like:hover span {
+    color: #cc4b37;
+}
+
+
+
+.liked {
+    background-color: transparent;
+    /*border-color: #cc4b37;*/
+}
+
+.liked .fa,
+.liked span {
+    color: #cc4b37;
+}
+
+.liked:focus {
+    background-color: transparent;
+}
+
+.liked:focus .fa,
+.liked:focus span {
+    color: #cc4b37;
+}
+
+.liked:hover {
+    background-color: transparent;
+    /*border-color: #cc4b37;*/
+}
+
+.liked:hover .fa,
+.liked:hover span {
+    color: palevioletred;
+}
+
+
+
+/*bookmark*/
+
+.button-bookmark {
+    -webkit-appearance: none;
+    outline: none;
+    border: 0;
+    background: transparent;
+}
+
+/*
+f097 fa-bookmark-o
+f02e fa-bookmark
+*/
+.button-bookmark.active::before {
+    content: "\f02e";
+    font-family: FontAwesome;
+    color: forestgreen;
+    font-size: 2em;
+}
+
+.button-bookmark span.active::before{
+    font-size: 2em;
+}
+
+.button-bookmark::before {
+    content: "\f097";
+    font-family: FontAwesome;
+    font-size: 2em;
+}
+
+.button-bookmark span::before{
+    font-size: 2em;
+}
