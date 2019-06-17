@@ -3,6 +3,36 @@
     require_once '../session.php';
     require_once '../log/log.php';
 
+    global $db;
+
+    $isEditMode='';
+    //편집모드인지 확인
+    if(isset($_GET['mode'])&&$_GET['mode']=='edit'){
+        $isEditMode=true;
+    }
+    
+
+    $story_db_id_inEditMode='';
+    $title_retrieved='';
+    $description_retrieved='';    //이미지도 가져와야함
+    $genre_retrieved='';
+    $author_username_retrieved='';
+    //편집모드: 이 story가 db에 어떤 id로 저장되어 있는지, get방식으로 값을 전달받는다
+    if(isset($_GET['id'])){
+        $story_db_id_inEditMode=$_GET['id'];
+
+        $query_retrieveSavedContent = "SELECT*FROM novelProject_storyInfo WHERE id ='$story_db_id_inEditMode'";
+        $result_retrieveSavedContent = mysqli_query($db, $query_retrieveSavedContent);
+        $row_retrieveSavedContent = mysqli_fetch_array($result_retrieveSavedContent);
+
+        $title_retrieved = $row_retrieveSavedContent['title'];
+        $description_retrieved = $row_retrieveSavedContent['description'];
+        $genre_retrieved = $row_retrieveSavedContent['genre'];
+        $author_username_retrieved = $row_retrieveSavedContent['author_username'];
+    }
+
+
+
     //db에 저장된 fiction 장르를 가져온다
     $board_name = 'fiction';
     $genre ='';
@@ -18,6 +48,8 @@
 
 //    var_dump($_SESSION);
 
+
+    //글 작성을 마치고 확인 버튼을 눌렀을 때 - 저장
     if(isset($_POST['btn_submit'])){
 
         $title = $_POST['title'];
@@ -32,7 +64,7 @@
         $isCompleted = 'N';
         $date = date("Y/m/d");
 
-//        push_log('title='.$title);
+        push_log('title='.$title);
 //        push_log('description='.$description);
 //        push_log('genre='.$genre);
 //        push_log('author_email='.$author_email);
@@ -40,23 +72,43 @@
 //        push_log('isCompleted='.$isCompleted);
 //        push_log('date='.$date);
 
-        $sql_storyInfo = "INSERT INTO novelProject_storyInfo(title, description, genre, author_email, author_username, 
+        if($isEditMode==true){ //수정모드일 때 - db수정
+
+            //story db 수정
+            $sql_storyInfo = "UPDATE novelProject_storyInfo 
+SET lastUpdate='$date', title='$title', description='$description', genre='$genre', author_username='$author_username' 
+WHERE id='$story_db_id_inEditMode'";
+
+            $result_storyDB_edit = mysqli_query($db, $sql_storyInfo) or die(mysqli_error($db));
+
+            if($result_storyDB_edit){
+                push_log('story edit) query succeeded');
+
+                header("location: page_TableOfContents.php?id=$story_db_id_inEditMode"); //redirect
+
+            }else{
+                push_log('story edit) error: story');
+            }
+
+
+        }else{ //최초작성 시 - db에 저장
+
+            $sql_storyInfo = "INSERT INTO novelProject_storyInfo(title, description, genre, author_email, author_username, 
 isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$description','$genre','$author_email'
 ,'$author_username','$isCompleted','$date','$date', 0)";
 
-//        for($i=0; $i<1000; $i++){
-//            mysqli_query($db, $sql_storyInfo);
-//        }
 
-        $result = mysqli_query($db, $sql_storyInfo);
+            $result = mysqli_query($db, $sql_storyInfo);
 
-        if($result){
+            if($result){
 
-            $inserted_id = mysqli_insert_id($db);
-            push_log('query succeeded. db id='.$inserted_id);
+                $inserted_id = mysqli_insert_id($db);
+                push_log('query succeeded. db id='.$inserted_id);
 
-            header("location: page_writeNewEpisode.php?id=$inserted_id"); //redirect
+                header("location: page_writeNewEpisode.php?id=$inserted_id"); //redirect
+            }
         }
+
     }
 
 ?>
@@ -127,7 +179,11 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 
                 <div>
                     <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" name="title" placeholder="Untitled Story" required>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Untitled Story"
+                           value="<?php
+                           if($isEditMode==true){
+                               echo $title_retrieved;
+                           } ?>" required>
                     <div class="invalid-feedback">
                         Title is required.
                     </div>
@@ -136,7 +192,12 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 
                 <div class="mb-3" style="margin-top: 30px;">
                     <label for="description">Description</label>
-                    <textarea type="text" class="form-control" id="description" name="description" rows="5" required></textarea>
+                    <textarea type="text" class="form-control" id="description" name="description" rows="5" required>
+                        <?php if($isEditMode==true){
+                            echo $description_retrieved;
+                        }
+                        ?>
+                    </textarea>
                     <div class="invalid-feedback">
                         Please enter description of the story.
                     </div>
@@ -146,7 +207,13 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
                     <div class="col-md-5 mb-3">
                         <label for="genre">Genre</label>
                         <select class="custom-select d-block w-100" id="genre" name="genre" required>
-                            <option value="">Choose...</option>
+                            <option value=""><?php
+                                if($isEditMode==true){
+                                    echo $genre_retrieved;
+                                }else{
+                                    echo 'Choose..';
+                                }
+                                ?></option>
 
                             <?php
                             //string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
@@ -167,7 +234,13 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 
                 <hr class="mb-4">
                 <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" name="anonymous" id="anonymous" value="Anonymous">
+                    <?php
+                    if($isEditMode==true && $author_username_retrieved=='Anonymous'){
+                        echo '<input type="checkbox" class="custom-control-input" name="anonymous" id="anonymous" value="Anonymous" checked>';
+                    }else{
+                        echo '<input type="checkbox" class="custom-control-input" name="anonymous" id="anonymous" value="Anonymous">';
+                    }
+                    ?>
                     <label class="custom-control-label" for="anonymous">Anonymous</label>
                 </div>
 

@@ -1,16 +1,20 @@
 <?php
 //ckeditor로 이미지를 업로드하는 코드(서버측)
+//이 파일 이름 바꾸면 안됨. ckeditor config에 upload.php라는 파일에서 이미지 처리하겠다고 적어놓음
+
+//ckeditor 소스 폴더는 novel_project 상위폴더에 있음
+//거기서 config.js 수정가능
 
 //require_once '../log/log.php';
-require_once 'functions.php'; //랜덤 문자열을 만드는 함수가 여기에 있음
+require_once '../functions.php'; //랜덤 문자열을 만드는 함수가 여기에 있음
 
 //에러 해결법
-//절대경로와 상대경로를 구분할 것
+//절대경로와 상대경로를 구분할 것('/가 없는것', '/', './' 차이점)
 //이미지를 저장하는 폴더에 777 권한을 부여해야함
 //config.filebrowserUploadMethod = 'form' 있어야함
 
-$uploadfullPath = "/usr/local/apache/htdocs/images/ck_uploads/";
-$imageBaseUrl = "/images/ck_uploads/";
+$uploadfullPath = "/usr/local/apache/htdocs/novel_project/images/ck_uploads/";
+$imageBaseUrl = "/novel_project/images/ck_uploads/";
 $CKEditor = $_GET['CKEditor'] ;
 $funcNum = $_GET['CKEditorFuncNum'] ;
 $langCode = $_GET['langCode'] ;

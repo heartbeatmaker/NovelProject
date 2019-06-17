@@ -3,36 +3,58 @@
     require_once '../session.php';
     require_once '../log/log.php';
 
-    //이 소설이 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
+    global $db;
+
+    //편집 모드인지 확인한다
+    $isEditMode='';
+    if(isset($_GET['mode'])&&$_GET['mode']=='edit'){
+        $isEditMode=true;
+    }
+
+    //편집모드: 이미 저장된 글을 고치는 것이기 때문에, 해당 episode의 db id를 get방식으로 가져온다
+    $episode_db_id_inEditMode='';
+    $title_retrieved='';
+    $content_retrieved='';
+    if(isset($_GET['ep_id'])){
+        $episode_db_id_inEditMode=$_GET['ep_id'];
+
+        $query_retrieveSavedContent = "SELECT*FROM novelProject_episodeInfo WHERE id ='$episode_db_id_inEditMode'";
+        $result_retrieveSavedContent = mysqli_query($db,$query_retrieveSavedContent);
+        $row_retrieveSavedContent = mysqli_fetch_array($result_retrieveSavedContent);
+
+        $title_retrieved = $row_retrieveSavedContent['title'];
+        $content_retrieved = $row_retrieveSavedContent['content'];
+    }
+
+
+    //공통: 이 episode가 속한 story가 story db에 어떤 id로 저장되어 있는지, get방식으로 받아온다
     $story_db_id='';
     if(isset($_GET['id'])){
         $story_db_id = $_GET['id'];
     }
-    push_log("received db_id=".$story_db_id);
 
-    //제목추출
+
+    //story 정보를 가져온다
     $sql = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
 
     global $db;
     $result = mysqli_query($db, $sql);
 
     $storyTitle='';
-    $author_username='';
-    $author_email='';
-    $numberOfEpisode='';
+    $author_username=''; //편집모드에서는 필요x
+    $author_email=''; //편집모드에서는 필요x
+    $numberOfEpisode=''; //편집모드에서는 필요x
     if(mysqli_num_rows($result)==1){
         $row = mysqli_fetch_array($result);
+
         $storyTitle = $row['title'];
         $author_username=$row['author_username'];
         $author_email=$row['author_email'];
         $numberOfEpisode=$row['numberOfEpisode']+1;
-
-        //사용자가 url을 직접 입력하여 이 페이지에 들어왔을 경우, 로그인 페이지로 보낸다
-        if($author_email!=$_SESSION['email']){
-            header("location: ../login/login.php"); //redirect
-        }
     }
 
+
+    //글 작성 후 확인버튼을 눌렀을 때
     if(isset($_POST['btn_submit'])){
 
         $episodeTitle = $_POST['title'];
@@ -41,47 +63,86 @@
         $time = date("Y-m-d H:i:s");
         $date = date("Y/m/d");
 
-            push_log('episodeTitle='.$episodeTitle);
-            push_log('content='.$content);
-            push_log('storyTitle='.$storyTitle);
-            push_log('author_email='.$author_email);
-            push_log('author_name='.$author_username);
-            push_log('time='.$time);
-            push_log('date='.$date);
-            push_log('noOfEpisodes + 1='.$numberOfEpisode);
+        push_log('episodeTitle='.$episodeTitle);
+        push_log('content='.$content);
+        push_log('storyTitle='.$storyTitle);
+        push_log('author_email='.$author_email);
+        push_log('author_name='.$author_username);
+        push_log('time='.$time);
+        push_log('date='.$date);
+        push_log('noOfEpisodes + 1='.$numberOfEpisode);
 
-        $sql_episodeInfo = "INSERT INTO novelProject_episodeInfo(title, content, storyTitle, author_email, author_username, date, story_db_id)VALUES
+
+        if($isEditMode == true){ //편집모드일때 - story db 업데이트, episode db 업데이트
+
+            //story db - 마지막 업데이트 시각 수정
+            $sql_storyInfo = "UPDATE novelProject_storyInfo SET lastUpdate='$date' WHERE id='$story_db_id'";
+
+            //episode db - 제목, 내용, 수정시각 수정
+            $sql_episodeInfo = "UPDATE novelProject_episodeInfo SET title='$episodeTitle', content='$content', editDate='$time' WHERE id='$episode_db_id_inEditMode'";
+
+
+            $result_storyDB_edit = mysqli_query($db, $sql_storyInfo) or die(mysqli_error($db));
+            $result_episodeDB_edit = mysqli_query($db, $sql_episodeInfo) or die(mysqli_error($db));
+
+
+            if($result_storyDB_edit){
+                push_log('edit) story query succeeded');
+
+                if($result_episodeDB_edit){
+
+                    $inserted_id = mysqli_insert_id($db);
+                    push_log('edit) episode query succeeded');
+
+                    //글 확인창으로 이동
+                    header("location: read_post.php?ep_id=$episode_db_id_inEditMode");
+
+
+                }else{
+                    push_log('edit) error: episode');
+                }
+            }else{
+                push_log('edit) error: story');
+            }
+
+
+        }else{ //새로 글 쓸 때 - story db 업데이트, episode 저장
+
+            $sql_episodeInfo = "INSERT INTO novelProject_episodeInfo(title, content, storyTitle, author_email, author_username, date, story_db_id)VALUES
     ('$episodeTitle','$content','$storyTitle','$author_email','$author_username','$time','$story_db_id')";
 
-        $sql_storyInfo = "UPDATE novelProject_storyInfo SET lastUpdate='$date', numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
+            $sql_storyInfo = "UPDATE novelProject_storyInfo SET lastUpdate='$date', numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
 
-        //story db 업데이트
-        $result_storyDB = mysqli_query($db, $sql_storyInfo);
+            //story db 업데이트
+            $result_storyDB = mysqli_query($db, $sql_storyInfo);
 
-        //episode 저장
-        $result_episodeDB = mysqli_query($db, $sql_episodeInfo) or die(mysqli_error($db));
+            //episode 저장
+            $result_episodeDB = mysqli_query($db, $sql_episodeInfo) or die(mysqli_error($db));
 
-        //        for($i=0; $i<1000; $i++){
-        //            mysqli_query($db, $sql_storyInfo);
-        //        }
 
-        if($result_storyDB){
-            push_log('story query succeeded');
+            if($result_storyDB){
+                push_log('story query succeeded');
 
-            if($result_episodeDB){
+                if($result_episodeDB){
 
-                $inserted_id = mysqli_insert_id($db);
-                push_log('episode query succeeded. db id='.$inserted_id);
+                    $inserted_id = mysqli_insert_id($db);
+                    push_log('episode query succeeded. db id='.$inserted_id);
 
-                header("location: read_post.php?ep_id=$inserted_id"); //redirect
+                    header("location: read_post.php?ep_id=$inserted_id"); //redirect
 
+                }else{
+                    push_log('error: episode');
+                }
             }else{
-                push_log('error: episode');
+                push_log('error: story');
             }
-        }else{
-            push_log('error: story');
         }
+
+
+
+
     }
+
 
 ?>
 
@@ -136,17 +197,25 @@
         <!--        세부사항-->
         <div class="col-md-10 blog-main" style="margin:0px auto">
 
+            <?php
+            if($isEditMode==true){
+                echo'
+                  <h4 style="margin-bottom: 20px">Edit Mode</h4>
+                ';
+            }
+            ?>
             <form method="post" action="" class="needs-validation" novalidate>
 
                 <div>
-                    <input type="text" class="form-control" name="title" id="title" placeholder="Title" required>
+                    <input type="text" class="form-control" name="title" id="title" placeholder="Title"
+                           value="<?php echo $title_retrieved?>" required>
                     <div class="invalid-feedback">
                         Title is required.
                     </div>
                 </div>
 
                 <div class="mb-3" style="margin-top: 30px;">
-                    <textarea type="text" class="form-control" name="content" id="content" required></textarea>
+                    <textarea type="text" class="form-control" name="content" id="content" required><?php echo $content_retrieved?></textarea>
                     <div class="invalid-feedback">
                         Content is required.
                     </div>

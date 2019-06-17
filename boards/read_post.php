@@ -3,12 +3,15 @@
     require_once '../session.php';
     require_once '../log/log.php';
 
-    //이 소설이 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
+    require_once 'comment_server.php';
+
+//    var_dump($_SESSION);
+
+    //이 episode가 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
     $episode_db_id='';
     if(isset($_GET['ep_id'])){
         $episode_db_id = $_GET['ep_id'];
     }
-    push_log("received db_id=".$episode_db_id);
 
     //정보 추출
     $sql = "SELECT*FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
@@ -81,9 +84,6 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 
-    <!--    dataTables-->
-    <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
-
     <!--    stylesheets-->
     <link rel="stylesheet" href="../css/write/button.css">
 
@@ -97,7 +97,7 @@
     <title>ReadMe</title>
 
     <script src="global.js"></script>
-    <link rel="stylesheet" href="../css/comment.css">
+<!--    <link rel="stylesheet" href="../css/comment.css">-->
     <link rel="stylesheet" href="../css/comment_styles.css">
 
 
@@ -108,18 +108,33 @@
             <div class="row flex-nowrap justify-content-between align-items-center">
                 <div class="col-8" >
                     <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
-                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php"> | <?php echo $storyTitle.' by '.$author_username?></a>
+                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id=<?php echo $story_db_id?>"> | <?php echo $storyTitle.' by '.$author_username?></a>
                 </div>
-
-                <button class="btn btn-outline-info my-2 my-sm-0" onclick="location.href='../login/login.php'" style="margin-right: 20px">Sign-in</button>
-            </div>
+                <?php
+                if(isset($_SESSION['email'])){
+                    echo '
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                '.$_SESSION['user'].'
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">My Page</a>
+                                <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
+                            </div>
+                        </div>
+                        ';
+                }else{
+                    echo '<button class="btn btn-outline-secondary" onclick="location.href=\'../login/login.php\'" style="margin-right: 20px">Sign-in</button>';
+                }
+                ?>
+               </div>
         </header>
 
     </div>
 
 
 
-    <main role="main" class="container" style="margin-top: 50px;">
+    <main role="main" class="container" style="margin-top: 100px;">
         <div class="col-9" style="margin:0px auto">
     <!--            글 내용-->
             <div class="content" style="margin-bottom: 100px">
@@ -134,7 +149,7 @@
                 //    ?>
 
 <!--                <div style="font-size: 20px; font-family: 'Times New Roman'; color: grey;">Lord of the Rings by JRR Tolkin</div>-->
-                <h1><?php echo $episodeTitle?></h1>
+                <h3 style="border-bottom:1px solid rgba(1,1,1,0.2); font-family: Arial, Helvetica, sans-serif"><?php echo $episodeTitle?></h3>
                 <?php
 
                 //글쓴이만 수정삭제 가능
@@ -158,7 +173,7 @@
                         }
                         ?></p>
                    </div>
-                <div>
+                <div style="margin-top: 70px">
                     <?php echo $content?>
                 </div>
             </div>
@@ -184,20 +199,22 @@
 <!--                <a class="p-3 text-muted" style="font-size: 20px" href="#">Support</a>-->
             </nav>
 
-            <div style="text-align: center; margin-top: 50px">
-                <button class="btn btn-outline-info" type="button" onclick="location.href='main.php'">Back to List</button>
-            </div>
+
+<!--            글의 접근 경로가 다양해서 back 버튼 지움-->
+<!--            <div style="text-align: center; margin-top: 50px">-->
+<!--                <button class="btn btn-outline-info" type="button" onclick="location.href='main.php'">Back to List</button>-->
+<!--            </div>-->
 
 
 <!--댓글-->
-            <div style="margin-top:50px; margin-bottom: 100px">
+            <div id="comment_body" style="margin-top:50px; margin-bottom: 100px">
 
                 <!--        댓글을 작성하는 폼-->
                 <form class="comment_form">
-                    <div>
-                        <label for="name"></label>
-                        <input type="hidden" name="post_id" id="post_id" value="<?php echo $id?>">
-                    </div>
+
+<!--                    이 글이 저장된 db id를 form에 숨겨놓음-->
+                    <input type="hidden" name="episode_db_id" id="episode_db_id" value="<?php echo $episode_db_id?>">
+
                     <?php
                     //로그인을 해야 댓글 작성 가능
                     if(isset($_SESSION['user'])){
@@ -211,7 +228,7 @@
                      ';}else{
                         echo'<div>You must sign-in to leave comments</div>';
                     }?>
-                    <!--        글의 id를 댓글 form에 포함시킨다-->
+
                 </form>
                 <?php //db에 저장되어 있는 댓글을 화면에 출력한다. $comments 는 server.php의 변수이다.
 
@@ -270,4 +287,4 @@ $(document).ready(function(){
 
 </html>
 <script src="scripts.js"></script><!--submit 버튼을 클릭했을 때, ajax로 서버에 해당 댓글의 정보를 보낸다-->
-<script src="jquery.min.js"></script>
+
