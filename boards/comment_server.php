@@ -38,21 +38,16 @@
         if(mysqli_num_rows($result)==1){
             $row = mysqli_fetch_array($result);
 
-            $numberOfComments=$row['comment'];
+            $numberOfComments=$row['numberOfComments'];
             push_log("comment) 최초 numberOfComments= ".$numberOfComments);
 
-            if($numberOfComments==null){
-                push_log("comment) numberOfComments=null 이라고 함. 확인: ".$numberOfComments);
-                $numberOfComments=1;
-            }else if($numberOfComments>=1){
-                push_log("comment) numberOfComments>=1 이라고 함. 확인: ".$numberOfComments);
-                $numberOfComments+=1;
-            }
-            push_log("comment) 마지막 numberOfComments= ".$numberOfComments);
+            $numberOfComments+=1;
+
+            push_log("comment) 추가된 numberOfComments= ".$numberOfComments);
         }
 
         //episode db에 댓글 수를 추가한다
-        $query_episodeInfo = "UPDATE novelProject_episodeInfo SET comment='$numberOfComments' WHERE id='$episode_db_id'";
+        $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= '$numberOfComments' WHERE id='$episode_db_id'";
 
         //받은 값을 댓글 db에 저장한다
         $query_comment = "INSERT INTO novelProject_comment (writer_username, writer_email, content, date, episode_db_id) VALUES ('$name', '$email', '$comment', '$date', '$episode_db_id')";
@@ -111,9 +106,16 @@
         $comment_db_id = $_POST['id'];
         $comment = $_POST['comment'];
 
+        $comment_writer_email_edit = $_POST['writer_email'];
+        $currentUser_email_edit = $_SESSION['email'];
+
 //            push_log("id= ".$id, "수정");
 
-        $onEdit_comment = '<div class="edit_form" id="edit_form_'.$comment_db_id.'">
+        $edit_result='fail';
+        //댓글 쓴 사람과 클릭한 사람의 이메일이 같으면 수정 form을 반환한다
+        if($comment_writer_email_edit==$currentUser_email_edit){
+
+            $edit_result = '<div class="edit_form" id="edit_form_'.$comment_db_id.'">
             <div>
                 <label for="comment">Comment:</label>
                 <textarea name="comment" id="edit_comment" cols="30" rows="5" >'.$comment.'</textarea>
@@ -122,8 +124,17 @@
             <button type="button" id="edit_cancel_btn" >CANCEL</button>
         </div>';
 
-        echo $onEdit_comment; // = response
+        }else{ //댓글쓴이 != 클릭한 사람
 
+            $edit_result = 'stranger';
+        }
+
+        push_log('comment_db_id='.$comment_db_id);
+        push_log('comment_writer_email'.$comment_writer_email_edit);
+        push_log('currentUser_email='.$currentUser_email_edit);
+        push_log('delete_result='.$edit_result);
+
+        echo $edit_result;
         exit();
     }
 
@@ -156,13 +167,35 @@
     }
 
     //댓글 삭제 시
-    if(isset($_GET['delete'])){
-        $comment_db_id = $_GET['id'];
-//        push_log("id= ".$id, "line 32");
+    if(isset($_POST['delete'])){
 
-        //해당 데이터를 DB에서 삭제한다
-        $query = "DELETE FROM novelProject_comment WHERE id=".$comment_db_id;
-        mysqli_query($db, $query);
+        $comment_writer_email = $_POST['writer_email'];
+        $comment_db_id = $_POST['id'];
+
+        $currentUser_email = $_SESSION['email'];
+
+        $delete_result='fail';
+        //댓글 쓴 사람과 클릭한 사람의 이메일이 같으면 이 댓글을 DB에서 삭제한다
+        if($comment_writer_email==$currentUser_email){
+
+            $query = "DELETE FROM novelProject_comment WHERE id=".$comment_db_id;
+            mysqli_query($db, $query);
+
+            $delete_result = 'success';
+
+        }else{ //댓글쓴이 != 클릭한 사람
+
+            $delete_result = 'stranger';
+
+        }
+
+
+        push_log('comment_db_id='.$comment_db_id);
+        push_log('comment_writer_email'.$comment_writer_email);
+        push_log('currentUser_email='.$currentUser_email);
+        push_log('delete_result='.$delete_result);
+
+        echo $delete_result;
         exit();
     }
 

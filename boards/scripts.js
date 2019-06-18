@@ -39,28 +39,36 @@ $(document).ready(function(){
     //사용자가 delete 버튼을 클릭했을 때, ajax를 호출한다
     $(document).on('click', '.delete', function(){
 
-        var currentUser_email = window.sessionStorage.getItem('email'); // null 뜸
-        var writer_email = $(this).siblings('#writer_email').val(); //제대로 나옴
+        //이 댓글 쓴 사람의 email을 가져온다. 댓글 작성자와 현 사용자가 동일한지 확인용
+        var writer_email = $(this).siblings('#writer_email').val();
 
-        console.log('currentuser_email='+currentUser_email+'/// writer_email='+writer_email)
-
-        //댓글 작성자와 현 사용자가 동일할 때 다음 코드를 실행한다 -- 아직 예외처리 안함
-
-            var id = $(this).data('id');
+            var id = $(this).data('id'); //episode_db_id
             // $(this).attr('data-id')와 동일
             var $clicked_btn = $(this);
 
             $.ajax({
                 url: 'comment_server.php', //서버측에서 가져올 페이지
-                type: 'GET', //통신타입 설정. GET 혹은 POST. 아래의 데이터를 get 방식으로 넘겨준다.
+                type: 'POST', //통신타입 설정. GET 혹은 POST. 아래의 데이터를 get 방식으로 넘겨준다.
                 data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
                     'delete': 1,
-                    'id': id
+                    'id': id,
+                    'writer_email': writer_email
                 },
                 //http 요청 성공 시 발생하는 이벤트
                 success: function(response){
-                    //remove deleted comment
-                    $clicked_btn.parent().remove();
+
+                    if(response == 'success'){
+                        console.log('successfully deleted the comment');
+                        //remove the comment from screen
+                        $clicked_btn.parent().remove();
+                    }else if(response=='stranger'){
+
+                        console.log('A stranger tried to delete the comment');
+                        //댓 작성자만 지울 수 있다고 팝업띄워줌
+                    }else if(response=='fail'){
+                        console.log('unable to delete the comment');
+                    }
+
                 }
             });
 
@@ -69,45 +77,58 @@ $(document).ready(function(){
 
 
     //사용자가 edit 버튼을 클릭했을 때
-    var edit_id;
+    var edit_id;//episode_db_id
     var $edit_comment;
-    // var name;
 
     var comment_div;
     var edit_span;
     var delete_span;
     $(document).on('click', '.edit', function(){
 
-        //댓글 작성자와 현 사용자가 동일할 때 다음 코드를 실행한다 --아직 이 예외처리 안함
 
-            edit_id = $(this).data('id');
-            $edit_comment = $(this).parent(); // =해당 댓글 div
+        edit_id = $(this).data('id');
+        $edit_comment = $(this).parent(); // =해당 댓글 div
 
-            // var $clicked_btn = $(this); //원래 댓글 div
-            // name = $(this).siblings('.display_name').text();
-            var comment = $(this).siblings('.comment_text').text();
-            comment_div = $(this).siblings('.comment_text');
-            edit_span = $(this);
-            delete_span = $(this).siblings('.delete');
+        //이 댓글 쓴 사람의 email을 가져온다. 댓글 작성자와 현 사용자가 동일한지 확인용
+        var writer_email = $(this).siblings('#writer_email').val();
 
-            $.ajax({
-                url: 'comment_server.php', //서버측에서 가져올 페이지
-                type: 'POST', //통신타입 설정. GET 혹은 POST
-                data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
-                    'edit': 1,
-                    'id': edit_id,
-                    // 'name' : name,
-                    'comment' : comment
-                },
-                //http 요청 성공 시 발생하는 이벤트
-                success: function(response){
+        // var $clicked_btn = $(this); //원래 댓글 div
+        // name = $(this).siblings('.display_name').text();
+        var comment = $(this).siblings('.comment_text').text();
+        comment_div = $(this).siblings('.comment_text');
+        edit_span = $(this);
+        delete_span = $(this).siblings('.delete');
+
+        $.ajax({
+            url: 'comment_server.php', //서버측에서 가져올 페이지
+            type: 'POST', //통신타입 설정. GET 혹은 POST
+            data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
+                'edit': 1,
+                'id': edit_id,
+                'writer_email' : writer_email,
+                'comment' : comment
+            },
+            //http 요청 성공 시 발생하는 이벤트
+            success: function(response){
+
+                if(response=='stranger'){
+
+                    console.log('A stranger tried to edit the comment');
+
+                }else if(response=='fail'){
+                    console.log('unable to edit the comment');
+
+                }else{
+                    console.log('able to edit the comment');
 
                     $edit_comment.append(response); //기존 댓글 밑에 수정 박스를 넣어줌
                     comment_div.hide(); //나머지 불필요한 요소를 숨김
                     edit_span.hide();
                     delete_span.hide();
                 }
-            });
+
+            }
+        });
 
     });
 

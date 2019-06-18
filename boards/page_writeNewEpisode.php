@@ -29,8 +29,10 @@
 
     //공통: 이 episode가 속한 story가 story db에 어떤 id로 저장되어 있는지, get방식으로 받아온다
     $story_db_id='';
+    $board_name='';
     if(isset($_GET['id'])){
         $story_db_id = $_GET['id'];
+        $board_name='fiction';
     }
 
 
@@ -41,6 +43,7 @@
     $result = mysqli_query($db, $sql);
 
     $storyTitle='';
+    $storyGenre='';//편집모드에서는 필요x
     $author_username=''; //편집모드에서는 필요x
     $author_email=''; //편집모드에서는 필요x
     $numberOfEpisode=''; //편집모드에서는 필요x
@@ -48,6 +51,7 @@
         $row = mysqli_fetch_array($result);
 
         $storyTitle = $row['title'];
+        $storyGenre=$row['genre'];
         $author_username=$row['author_username'];
         $author_email=$row['author_email'];
         $numberOfEpisode=$row['numberOfEpisode']+1;
@@ -95,7 +99,7 @@
                     push_log('edit) episode query succeeded');
 
                     //글 확인창으로 이동
-                    header("location: read_post.php?ep_id=$episode_db_id_inEditMode");
+                    header("location: read_post.php?board=$board_name&ep_id=$episode_db_id_inEditMode");
 
 
                 }else{
@@ -108,8 +112,10 @@
 
         }else{ //새로 글 쓸 때 - story db 업데이트, episode 저장
 
-            $sql_episodeInfo = "INSERT INTO novelProject_episodeInfo(title, content, storyTitle, author_email, author_username, date, story_db_id)VALUES
-    ('$episodeTitle','$content','$storyTitle','$author_email','$author_username','$time','$story_db_id')";
+            $initial_number=0;
+
+            $sql_episodeInfo = "INSERT INTO novelProject_episodeInfo(genre, title, content, storyTitle, author_email, author_username, date, story_db_id, numberOfViews, numberOfComments, numberOfLikes, bookmark)VALUES
+    ('$storyGenre','$episodeTitle','$content','$storyTitle','$author_email','$author_username','$time','$story_db_id', 0, 0, 0, 0)";
 
             $sql_storyInfo = "UPDATE novelProject_storyInfo SET lastUpdate='$date', numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
 
@@ -128,7 +134,7 @@
                     $inserted_id = mysqli_insert_id($db);
                     push_log('episode query succeeded. db id='.$inserted_id);
 
-                    header("location: read_post.php?ep_id=$inserted_id"); //redirect
+                    header("location: read_post.php?board=$board_name&ep_id=$inserted_id"); //redirect
 
                 }else{
                     push_log('error: episode');

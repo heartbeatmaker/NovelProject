@@ -3,6 +3,18 @@
     require_once '../session.php';
     require_once '../log/log.php';
 
+
+    $URL = "../login/login.php";
+    if(!isset($_SESSION['user'])) {
+?>
+    <script>
+            alert("You must sign-in first.");
+            location.replace("<?php echo $URL?>");
+    </script>
+<?php
+        }
+
+
     global $db;
 
     $isEditMode='';

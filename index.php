@@ -158,8 +158,8 @@ if(isset($_POST['signout_btn'])) {
         <div class="nav-scroller py-1 mb-2">
             <nav class="nav d-flex justify-content-between bg-light">
                 <a class="p-2 text-muted" style="margin-left: 80px;" href="#">Fandom</a>
-                <a class="p-2 text-muted" href="boards/mainPage.php">Fiction</a>
-                <a class="p-2 text-muted" href="#">Non-fiction</a>
+                <a class="p-2 text-muted" href="boards/mainPage.php?board=fiction">Fiction</a>
+                <a class="p-2 text-muted" href="boards/mainPage.php?board=non-fiction">Non-fiction</a>
                 <a class="p-2 text-muted" href="#">Community</a>
                 <a class="p-2 text-muted" href="#">Hot 100</a>
                 <a class="p-2 text-muted" style="margin-right: 80px;" href="#">About</a>
@@ -171,7 +171,7 @@ background-image: url('images/book.jpg')">
             <div class="col-md-6 px-0">
                 <h1 class="display-4 font-italic" style="font-family: 'Times New Roman'">
                     Share your stories.</h1>
-                <p class="lead my-3"><strong>ReadMe</strong> supports brilliant writers to share their stories and communication with readers.</p>
+                <p class="lead my-3"><strong>ReadMe</strong> supports brilliant writers to share their stories and communicate with readers.</p>
             </div>
         </div>
 

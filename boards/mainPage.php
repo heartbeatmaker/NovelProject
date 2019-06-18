@@ -1,24 +1,161 @@
 <?php
-require_once  '/usr/local/apache/security_files/connect.php';
-require_once '../session.php';
-require_once '../log/log.php';
+    require_once  '/usr/local/apache/security_files/connect.php';
+    require_once '../session.php';
+    require_once '../log/log.php';
 
-//var_dump($_SESSION);
+    //게시판 이름을 get 방식으로 전달받는다
+    $board_name = $_GET['board'];
 
-if(isset($_POST['signout_btn'])) {
+    //db에 저장된 fiction 장르를 가져온다
+    $sql_tableName='';
+    if($board_name=='fiction'){
+        $sql_tableName='novelProject_episodeInfo';
+    }else if($board_name=='non-fiction'){
+//        $sql_tableName=''
+    }
 
-    $email = $_SESSION['email'];
-    push_log($email . " sign out");
 
-    //해당 사용자의 db정보를 수정한다
+
+    $genre ='';
+    $sql = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
+
     global $db;
-    $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
-    mysqli_query($db, $query_deleteInfo);
+    $result = mysqli_query($db, $sql);
 
-    $_SESSION = array(); //세션 변수 전체를 초기화한다
+    if(mysqli_num_rows($result)==1){
+        $row = mysqli_fetch_array($result);
+        $genre_string = $row['category'];
+    }
 
-    echo "<script>alert(\"Bye! \");</script>";
-}
+
+    //페이징 용도
+    if(!isset($_GET['page'])){
+        $page = 1;
+    }else{
+        $page = $_GET['page'];
+    }
+
+
+    if(isset($_GET['tag'])){
+        $tag = $_GET['tag'];
+        
+
+        if(isset($_GET['sort'])){ //태그를 설정한 상태에서 인기순 or 최신순으로 분류할 때
+            $sort = $_GET['sort'];
+
+            //이 소설의 episode를 db에서 가져온다
+            //이 소설의 episode가 총 몇 개인지 확인
+            $sql_episode_tag_sort = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
+            $result = mysqli_query($db, $sql_episode_tag_sort);
+            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+            $results_per_page = 10;//한 페이지당 10개로 제한
+            $number_of_pages = ceil($number_of_results/$results_per_page);
+            //페이지마다 몇번째 행부터 데이터를 출력할 지
+            $start_from = ($page - 1)*$results_per_page;
+
+
+            $sql='';
+            if($sort=='Rating'){
+                $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+
+            }else if($sort=='New'){
+                $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
+            }
+
+            //10개씩만 가져온다
+            $result = mysqli_query($db, $sql);
+
+
+        }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때
+
+            //이 소설의 episode를 db에서 가져온다
+            //이 소설의 episode가 총 몇 개인지 확인
+            $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
+            $result = mysqli_query($db, $sql_episode_tag);
+            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+            $results_per_page = 10;//한 페이지당 10개로 제한
+            $number_of_pages = ceil($number_of_results/$results_per_page);
+            //페이지마다 몇번째 행부터 데이터를 출력할 지
+            $start_from = ($page - 1)*$results_per_page;
+
+
+            //10개씩만 가져온다
+            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' LIMIT ".$start_from .",".$results_per_page;
+            $result = mysqli_query($db, $sql);
+
+
+        }
+
+
+    }else{ //처음 이 페이지에 들어오거나, 분류 없이 페이지 넘길때
+
+
+        if(isset($_GET['sort'])){
+            $sort = $_GET['sort'];
+
+            //이 소설의 episode를 db에서 가져온다
+            //이 소설의 episode가 총 몇 개인지 확인
+            $sql_episode_sort = "SELECT*FROM ".$sql_tableName;
+            $result = mysqli_query($db, $sql_episode_sort);
+            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+            $results_per_page = 10;//한 페이지당 10개로 제한
+            $number_of_pages = ceil($number_of_results/$results_per_page);
+            //페이지마다 몇번째 행부터 데이터를 출력할 지
+            $start_from = ($page - 1)*$results_per_page;
+
+
+            $sql='';
+            if($sort=='Rating'){
+                $sql = "SELECT*FROM ".$sql_tableName." ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+
+            }else if($sort=='New'){
+                $sql = "SELECT*FROM ".$sql_tableName." ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
+            }
+
+            //10개씩만 가져온다
+            $result = mysqli_query($db, $sql);
+
+        }else{ //아무 분류를 하지 않았을 때
+
+            //이 소설의 episode를 db에서 가져온다
+            //이 소설의 episode가 총 몇 개인지 확인
+            $sql_episode_only = "SELECT*FROM ".$sql_tableName;
+            $result = mysqli_query($db, $sql_episode_only);
+            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+            $results_per_page = 10;//한 페이지당 10개로 제한
+            $number_of_pages = ceil($number_of_results/$results_per_page);
+            //페이지마다 몇번째 행부터 데이터를 출력할 지
+            $start_from = ($page - 1)*$results_per_page;
+
+
+            //10개씩만 가져온다
+            $sql = "SELECT*FROM ".$sql_tableName." LIMIT ".$start_from .",".$results_per_page;
+            $result = mysqli_query($db, $sql);
+
+        }
+
+    }
+
+
+
+    if(isset($_POST['signout_btn'])) {
+
+        $email = $_SESSION['email'];
+        push_log($email . " sign out");
+
+        //해당 사용자의 db정보를 수정한다
+        global $db;
+        $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
+        mysqli_query($db, $query_deleteInfo);
+
+        $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+        echo "<script>alert(\"Bye! \");</script>";
+    }
 ?>
 
 <!doctype html>
@@ -31,9 +168,6 @@ if(isset($_POST['signout_btn'])) {
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-
-    <!--    dataTables-->
-    <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
 
     <!--    stylesheets-->
     <link rel="stylesheet" href="../css/write/items.css">
@@ -70,10 +204,9 @@ if(isset($_POST['signout_btn'])) {
                     </button>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="#">My Stories</a>
+                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                     </div>
                 </div>
-
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -92,7 +225,6 @@ if(isset($_POST['signout_btn'])) {
                 }
                 ?>
 
-
             </div>
         </div>
     </header>
@@ -101,68 +233,394 @@ if(isset($_POST['signout_btn'])) {
 
 <main role="main" class="container">
 
-    <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 20px; margin-bottom: 30px;">
+    <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 40px; margin-bottom: 30px;">
         <p>Refine by tag</p>
+        <button class="btn btn-outline-success" style="margin:10px"
+        onclick="location.href='mainPage.php?board=<?php echo $board_name?>'">All</button>
         <?php
 
-        for($i=0; $i<30; $i++){
-            echo '  <button class="btn btn-outline-success" style="margin:10px">thriller</button>';
-        }
+        //string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
+        $genre_split_array = explode(';', $genre_string);
 
+        for($i=0; $i<count($genre_split_array); $i++){
+
+            $genre_after_split = $genre_split_array[$i];
+
+            //선택된 장르의 버튼색깔을 active로 바꿔준다
+            if($genre_after_split==$tag){
+                echo '<button class="btn btn-outline-success active" style="margin:10px"
+            onclick="location.href=\'mainPage.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
+
+            }else{
+                echo '<button class="btn btn-outline-success" style="margin:10px"
+            onclick="location.href=\'mainPage.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
+            }
+        }
         ?>
     </div>
 
-    <div class="row">
-        <div class="col-md-8 blog-main" id="hot_post_list">
+    <div class="row" style="margin-top: 50px">
+        <div class="col-md-8 blog-main" id="hot_post_list" style="margin:0px auto;">
             <div style="margin-bottom: 50px">
-                <div style="float:left; width: 80%;">1.2k stories</div>
+                <h4 style="float:left; width: 80%;"> <?php
+                    if($number_of_results>1){
+                        echo $number_of_results.' Stories';
+                    }else{
+                        echo $number_of_results.' Story';
+                    }
+                    ?></h4>
                 <div class="btn-group" style="float:left; width:20%">
                     <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Sort by: Rating
+                        Sort by : <?php echo $sort?>
                     </button>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#">Rating</a>
-                        <a class="dropdown-item" href="#">New</a>
+                        <?php
+                        if($tag!=null){
+                            echo '
+                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&sort=Rating">Rating</a>
+                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&sort=New">New</a>
+                            ';
+                        }else{
+                            echo '
+                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&sort=Rating">Rating</a>
+                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&sort=New">New</a>
+                            ';
+                        }
+
+                        ?>
                     </div>
                 </div>
             </div>
 
+
             <?php
 
-            for($i=0; $i<10; $i++){
+            while($row = mysqli_fetch_array($result)){
+
+                $story_db_id=$row['story_db_id'];
+                $genre = $row['genre'];
+                $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
+
+                //image 받아야함
+                $title=$row['title'];
+                $author_username=$row['author_username'];
+                $date=$row['date'];
+                $numberOfLikes = $row['numberOfLikes'];
+                $numberOfComments = $row['numberOfComments'];
+                $numberOfViews = $row['numberOfViews'];
+
+                $date_modified = explode(' ',$date)[0];
+                $today=date("Y-m-d");
+
+                if($date_modified==$today){
+                    $date_modified = 'Today '.explode(' ',$date)[1];
+                }
+
+                //storyInfo db에서 title, description 가져오기
+                $story_title='';
+                $story_description='';
+                $sql_description = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
+                $result_story = mysqli_query($db, $sql_description) or die(mysqli_error($db));
+
+                if(mysqli_num_rows($result_story)==1){
+                    $row_story = mysqli_fetch_array($result_story);
+                    $story_title=$row_story['title'];
+                    $story_description = $row_story['description'];
+                }
+
+
                 echo
-                     '<div class="list_item" onclick="location.href=\'read_post.php\'" style="margin-bottom: 20px;">
+                '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
                             <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
-                                <strong class="d-inline-block mb-2 text-primary">Fiction - Comedy</strong>
-                                <h4 class="mb-0">
-                                    <a class="text-dark">Featured post</a>
-                                </h4>
-                                <div class="mb-1 text-muted">by Jane Doe</div>
-                                <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
-                                <div style="margin-top: 10px">2000 likes | 100 comments</div>
+                                <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
+                                <h5 class="mb-0">
+                                    <a class="text-dark">'.$story_title.' : '.$title.'</a>
+                                </h5>
+                                <div class="mb-1 text-muted">by '.$author_username.'</div>
+                                <p class="card-text mb-auto">'.$story_description.'</p>
+                                <div style="margin-top: 10px; width:100%;">
+                                    <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
+                                    <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
+                                </div>
                             </div>
              
                         </div>
                      </div>';
             }
+
             ?>
 
 
-            <nav aria-label="Page navigation example" style="margin-top: 50px; margin-bottom: 100px;">
+            <nav aria-label="Page navigation example" style="margin-top: 80px; margin-bottom: 100px;">
                 <ul class="pagination">
-                    <li class="page-item"><a class="page-link" href="#">First</a></li>
-                    <li class="page-item">. . .</li>
-                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">4</a></li>
-                    <li class="page-item"><a class="page-link" href="#">5</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                    <li class="page-item">. . .</li>
-                    <li class="page-item"><a class="page-link" href="#">Last</a></li>
+                    <?php
+
+                    if($tag!=null){ //장르(tag)별로 분류해서 페이징
+
+
+                        if($sort!=null){ //인기순 or 최신순으로 분류할 때
+
+
+                            if($number_of_pages > 5){ // 전체 페이지가 5개보다 많은 경우
+                                if($page<=3){ //사용자가 1~3페이지까지 선택했을 경우
+
+                                    //1~5페이지를 보여준다
+                                    for ($i=1; $i<=5; $i++){
+                                        if($i==$page){ //이 페이지에 들어온 상태일 때 - active
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
+                                    for ($i=$page-2; $i<=$page+2; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    //마지막에서 5개 페이지를 보여준다
+                                    for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                }
+
+                            }else{
+                                for ($i=1; $i<=$number_of_pages; $i++){
+                                    if($i==$page){
+                                        echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                    }else{
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                    }
+                                }
+                            }
+
+
+
+
+                        }else{//장르별로만 분류
+
+                            if($number_of_pages > 5){ // 전체 페이지가 5개보다 많은 경우
+                                if($page<=3){ //사용자가 1~3페이지까지 선택했을 경우
+
+                                    //1~5페이지를 보여준다
+                                    for ($i=1; $i<=5; $i++){
+                                        if($i==$page){ //이 페이지에 들어온 상태일 때 - active
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
+                                    for ($i=$page-2; $i<=$page+2; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    //마지막에서 5개 페이지를 보여준다
+                                    for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                }
+
+                            }else{
+                                for ($i=1; $i<=$number_of_pages; $i++){
+                                    if($i==$page){
+                                        echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                    }else{
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }else{ //장르(tag) 미분류
+
+
+                        if($sort!=null){ //인기순, 최신순으로 분류
+
+
+                            if($number_of_pages > 5){ // 전체 페이지가 5개보다 많은 경우
+                                if($page<=3){ //사용자가 1~3페이지까지 선택했을 경우
+
+                                    //1~5페이지를 보여준다
+                                    for ($i=1; $i<=5; $i++){
+                                        if($i==$page){ //이 페이지에 들어온 상태일 때 - active
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
+                                    for ($i=$page-2; $i<=$page+2; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    //마지막에서 5개 페이지를 보여준다
+                                    for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                }
+
+                            }else{
+                                for ($i=1; $i<=$number_of_pages; $i++){
+                                    if($i==$page){
+                                        echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                    }else{
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                    }
+                                }
+                            }
+
+
+
+                        }else{//아무 분류도 안함
+
+                            if($number_of_pages > 5){ // 전체 페이지가 5개보다 많은 경우
+                                if($page<=3){ //사용자가 1~3페이지까지 선택했을 경우
+
+                                    //1~5페이지를 보여준다
+                                    for ($i=1; $i<=5; $i++){
+                                        if($i==$page){ //이 페이지에 들어온 상태일 때 - active
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
+                                    for ($i=$page-2; $i<=$page+2; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                    //마지막 페이지로 가는 버튼
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
+
+                                }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
+
+                                    //첫 페이지로 가는 버튼
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
+
+                                    //마지막에서 5개 페이지를 보여준다
+                                    for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
+                                        if($i==$page){
+                                            echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                        }else{
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                        }
+                                    }
+
+                                }
+
+                            }else{
+                                for ($i=1; $i<=$number_of_pages; $i++){
+                                    if($i==$page){
+                                        echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
+                                    }else{
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                    }
+                                }
+                            }
+
+
+                        }
+
+
+                    }
+
+
+                    ?>
+
                 </ul>
             </nav>
 
@@ -170,30 +628,6 @@ if(isset($_POST['signout_btn'])) {
         </div><!-- /.blog-main -->
 
 
-        <aside class="col-md-4 blog-sidebar">
-
-            <div style="margin-top: 50px; margin-bottom:30px">
-                <div>
-                    <div><h4 class="font-italic">Daily Best</h4></div>
-                </div>
-                <ul class="list-group mb-3">
-                    <?php
-                    for($i=0; $i<10; $i++) {
-                        echo '
-                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
-                                    <div>
-                                        <h6 class="my-0">Harry Potter - '.$i.'화</h6>
-                                        <small class="text-muted">J.K. Rowling</small>
-                                    </div>
-                                    <span class="text-muted">Fantasy</span>
-                                </li>';
-                    }
-                    ?>
-
-                </ul>
-            </div>
-
-        </aside>
 
     </div><!-- /.row -->
 

@@ -6,6 +6,11 @@
     require_once 'comment_server.php';
 
 //    var_dump($_SESSION);
+    $board_name = $_GET['board'];
+
+    if($board_name=='fiction'){
+        $sql_tableName = 'novelProject_episodeInfo';
+    }
 
     //이 episode가 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
     $episode_db_id='';
@@ -13,10 +18,12 @@
         $episode_db_id = $_GET['ep_id'];
     }
 
-    //정보 추출
-    $sql = "SELECT*FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
-
     global $db;
+
+
+    //정보 추출
+    $sql = "SELECT*FROM ".$sql_tableName." WHERE id='$episode_db_id'";
+
     $result = mysqli_query($db, $sql);
 
     $storyTitle='';
@@ -38,26 +45,89 @@
         $publishedTime =$row['date'];
         $story_db_id=$row['story_db_id'];
 
-        //사용자가 url을 직접 입력하여 이 페이지에 들어왔을 경우, 로그인 페이지로 보낸다
-        if($author_email!=$_SESSION['email']){
-            header("location: ../login/login.php"); //redirect
-        }
+        //조회수 +1 저장
+        $query_episodeInfo = "UPDATE ".$sql_tableName." SET numberOfViews= numberOfViews + 1 WHERE id='$episode_db_id'";
+        $result_episodeDB = mysqli_query($db, $query_episodeInfo);
     }
+
+
+    $isAlreadyLiked = false;
+    $isAlreadyBookmarked = false;
+    //좋아요, 북마크 버튼 처리 - 이 사용자가 이 글에 좋아요 or 북마크를 이미 눌렀는지 확인한다
+    if(isset($_SESSION['user'])){
+
+        $currentUser_email = $_SESSION['email'];
+        $query_userInfo = "SELECT*FROM novelProject_userInfo WHERE email ='$currentUser_email'";
+        $result_userInfo = mysqli_query($db, $query_userInfo) or die(mysqli_error($db));
+
+        //사용자의 좋아요, 북마크 목록을 가져온다
+        $currentLikeHistory='';
+        $currentBookmark='';
+        if(mysqli_num_rows($result_userInfo) == 1){
+            $row_userInfo = mysqli_fetch_array($result_userInfo);
+            $currentLikeHistory = $row_userInfo['likeHistory'];
+            $currentBookmark = $row_userInfo['bookmarkHistory'];
+        }
+        push_log('읽기화면) 사용자의 좋아요, 북마크 목록을 가져온다');
+        push_log('읽기화면) 최초 currentLikeHistory='.$currentLikeHistory.' // currentBookmark='.$currentBookmark);
+
+
+        //좋아요 값 확인
+        if($currentLikeHistory == null){ //좋아요 목록이 비어있으면 -> isAlreadyLiked=false로 내비둠
+            push_log('읽기화면) 좋아요 목록이 비어있음');
+
+        }else{ //좋아요 목록에 값이 있으면 -> 이 글에 좋아요를 이미 누른 상태인지 확인한다
+            push_log('읽기화면) 좋아요 목록에 값이 있음. 이 글에 좋아요를 이미 누른 상태인지 확인한다');
+
+            $currentLikeHistory_split = explode(';', $currentLikeHistory);
+
+            for($i=0; $i<count($currentLikeHistory_split); $i++){
+
+                push_log('읽기화면) '.$i.'번째 좋아요 글의 db id: '.$currentLikeHistory_split[$i]);
+                if($currentLikeHistory_split[$i] == $episode_db_id){
+                    $isAlreadyLiked=true;
+                    push_log('읽기화면) 이미 좋아요 목록에 있음');
+                }
+            }
+        }
+        push_log('읽기화면) 최종확인: isAlreadyLiked='.$isAlreadyLiked);
+
+
+        //북마크 값 확인
+        if($currentBookmark == null){ //북마크 목록이 비어있으면 -> isAlreadyBookmarked=false로 내비둠
+            push_log('읽기화면) 북마크 목록이 비어있음');
+
+        }else{ //북마크 목록에 값이 있으면 -> 이 글에 북마크를 이미 누른 상태인지 확인한다
+            push_log('읽기화면) 북마크 목록에 값이 있음. 이 글에 북마크를 이미 누른 상태인지 확인한다');
+
+            $currentBookmark_split = explode(';', $currentBookmark);
+
+            for($i=0; $i<count($currentBookmark_split); $i++){
+
+                push_log('읽기화면) '.$i.'번째 북마크 글의 db id: '.$currentBookmark_split[$i]);
+                if($currentBookmark_split[$i] == $episode_db_id){
+                    $isAlreadyBookmarked=true;
+                    push_log('읽기화면) 이미 북마크 목록에 있음');
+                }
+            }
+        }
+        push_log('읽기화면) 최종확인: isAlreadyBookmarked='.$isAlreadyBookmarked);
+
+    }
+
+
+
 
     //글 삭제 버튼을 누르면
     if(isset($_POST['post_delete_btn'])){
 
         //episode db에서 해당 데이터 삭제
-        $sql_episodeInfo = "DELETE FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
+        $sql_episodeInfo = "DELETE FROM ".$sql_tableName." WHERE id='$episode_db_id'";
         mysqli_query($db, $sql_episodeInfo);
 
         //story db에서 episode 개수 수정
-        $sql = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
-        $result = mysqli_query($db, $sql);
-        $row_story = mysqli_fetch_array($result);
-        $numberOfEpisode = $row_story['numberOfEpisode']-1;
-
-        $sql_storyInfo = "UPDATE novelProject_storyInfo SET numberOfEpisode='$numberOfEpisode' WHERE id='$story_db_id'";
+        $sql_storyInfo = "UPDATE novelProject_storyInfo SET numberOfEpisode= numberOfEpisode - 1 WHERE id='$story_db_id'";
+        mysqli_query($db, $sql_storyInfo);
 
         header("location: ../index.php");
     }
@@ -108,7 +178,8 @@
             <div class="row flex-nowrap justify-content-between align-items-center">
                 <div class="col-8" >
                     <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
-                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id=<?php echo $story_db_id?>"> | <?php echo $storyTitle.' by '.$author_username?></a>
+                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id=<?php echo $story_db_id?>">
+                        | <?php echo $storyTitle?></a> by <?php echo $author_username?>
                 </div>
                 <?php
                 if(isset($_SESSION['email'])){
@@ -183,15 +254,33 @@
 
 
             <nav class="nav d-flex justify-content-center" style="margin:0px auto; width:90%;">
-                <button type="button" class="btn-like" style="margin-right: 40px">
-                    <i class="fa fa-heart"></i>
+                    <?php
+                    if($isAlreadyLiked==true){
+                        echo '<button type="button" class="btn-like liked" id="like" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
+                                <i class="fa fa-heart"></i>
+                             ';
+                    }else{
+                        echo '<button type="button" class="btn-like" id="like" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
+                                <i class="fa fa-heart"></i>
+                             ';
+                    }
+                    ?>
                     <span>Like</span>
                 </button>
-                <button type="button" class="btn-like" style="margin-right: 40px">
-                    <i class="fa fa-bookmark"></i>
+                    <?php
+                    if($isAlreadyBookmarked==true){
+                        echo '<button type="button" class="btn-like liked" id="bookmark" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
+                                    <i class="fa fa-bookmark"></i>
+                                 ';
+                    }else{
+                        echo '<button type="button" class="btn-like" id="bookmark" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
+                                    <i class="fa fa-bookmark"></i>
+                                 ';
+                    }
+                    ?>
                     <span>Bookmark</span>
                 </button>
-                <button type="button" class="btn-like">
+                <button type="button" class="btn-like" data-db_id="<?php echo $episode_db_id?>" id="share">
                     <i class="fa fa-share-alt"></i>
                     <span>Share</span>
                 </button>
@@ -253,29 +342,68 @@
 $(document).ready(function(){
 
     $('.btn-like').click(function(){
-        $(this).toggleClass('liked');
+
+        var identity = $(this).attr('id'); //.btn-like 클래스를 가진 element가 3개 있는데, 그 중에 어떤 버튼인지 확인
+        var db_id = $(this).data('db_id'); // episodeInfo table 에서 이 글의 id
+
+        if(identity=='like' | identity=='bookmark'){
+
+            console.log(identity+' btn is clicked. episode_db_id='+db_id);
+
+            $.ajax({
+                url: 'button_server.php', //서버측에서 가져올 페이지
+                type: 'POST', //통신타입 설정. GET 혹은 POST. 아래의 데이터를 get 방식으로 넘겨준다.
+                data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
+                    'button':1,
+                    'identity': identity,
+                    'episode_db_id': db_id
+                },
+                //http 요청 성공 시 발생하는 이벤트
+                success: function(response){
+                    console.log('response: '+response);
+
+                    switch(response){
+                        //success -> 버튼 색 바꿔주기 + 처리 되었다고 알림 띄워주기
+
+                        case 'like':
+                            $('#like').toggleClass('liked');
+                            console.log('like succeeded');
+                            alert('Liked')
+                            break;
+
+                        case 'unlike':
+                            $('#bookmark').toggleClass('liked');
+                            alert('Unliked')
+                            break;
+                        case 'bookmark':
+                            $('#bookmark').toggleClass('liked');
+                            console.log('bookmark succeeded');
+                            alert('Bookmarked')
+                            break;
+
+                        case 'unbookmark':
+                            $('#bookmark').toggleClass('liked');
+                            alert('Unbookmarked')
+                            break;
+
+                        case 'login':
+                            console.log('login is needed');
+                            alert('Please sign-in.')
+                            break;
+                    }
+
+                }
+            });
+
+        }else{
+
+            //url 보여주기
+            console.log('share btn is clicked');
+            alert('Share this Story!')
+        }
+
     });
 
-    $('.pp-bookmark-btn').click(function() {
-            var btn = $(this);
-
-            var context = $(this).data("context");
-            var contextAction = $(this).data("context-action");
-            var contextId = $(this).data("context-id");
-            // $('#log').html(context + " " + contextAction + " " + contextId )
-
-            // if( btn.data('state') ) {
-            //    btn.data('state', false);
-            if (btn.hasClass("active")) {
-                btn.removeClass("active")
-                // $getJSON
-                //btn.html(bookmarkOff);
-            } else {
-                // btn.data('state', true);
-                btn.addClass("active");
-                //btn.html(bookmarkOn);
-            };
-        });
 
 });
 

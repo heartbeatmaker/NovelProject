@@ -3,6 +3,16 @@ require_once  '/usr/local/apache/security_files/connect.php';
 require_once '../session.php';
 require_once '../log/log.php';
 
+$URL = "../login/login.php";
+if(!isset($_SESSION['user'])) {
+    ?>
+    <script>
+        alert("You must sign-in first.");
+        location.replace("<?php echo $URL?>");
+    </script>
+    <?php
+}
+
 //var_dump($_SESSION);
 
 if(!isset($_GET['page'])){
@@ -150,12 +160,25 @@ if(isset($_POST['signout_btn'])) {
                $number_of_episode=$row['numberOfEpisode'];
                $isCompleted=$row['isCompleted'];
 
-               //image, likes, comments 받아야 함
+               //image 받아야 함
 
                if($isCompleted=='Y'){
                    $isCompleted='Completed';
                }else{
                    $isCompleted='inProgress';
+               }
+
+
+               //이 story에 총 몇 개의 like와 comment가 달렸는지 계산한다
+               $sql_episode = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
+               $result_episode = mysqli_query($db, $sql_episode);
+
+               $numberOfComments=0;
+               $numberOfLikes=0;
+               while($row_episode = mysqli_fetch_array($result_episode)){
+
+                   $numberOfComments+=$row_episode['numberOfComments'];
+                   $numberOfLikes+=$row_episode['numberOfLikes'];
                }
 
                 echo
@@ -174,7 +197,7 @@ if(isset($_POST['signout_btn'])) {
                                     </h3>
                                     <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
                                     <div style="margin-top: 10px">'.$number_of_episode.' Part Stories <strong>('.$isCompleted.')</strong></div>
-                                    <div style="margin-top: 10px">2000 likes | 100 comments</div>
+                                    <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfComments.' comments</div>
                                 </div>
                             </div>
                             
@@ -193,7 +216,7 @@ if(isset($_POST['signout_btn'])) {
 
         </div>
 
-        <nav aria-label="Page navigation example" style="margin:0px auto; margin-top: 100px">
+        <nav aria-label="Page navigation example" style="margin:0px auto; margin-top: 100px; padding-left: 100px; padding-right: 100px">
             <ul class="pagination">
                 <?php
                 if($number_of_pages > 5){ // 전체 페이지가 5개보다 많은 경우

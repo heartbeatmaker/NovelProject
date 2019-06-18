@@ -24,6 +24,11 @@
     $storyTitle='';
     $storyDescription='';
     $storyGenre='';
+    $period='';
+    $number_of_episodes='';
+    $isCompleted='';
+
+    $board_name='';
     //story 정보를 가져온다 - author email, story title
     $sql_checkStoryInfo = "SELECT*FROM novelProject_storyInfo WHERE id ='$db_id'";
     $result = mysqli_query($db, $sql_checkStoryInfo);
@@ -35,6 +40,38 @@
         $storyTitle =$row['title'];
         $storyDescription=$row['description'];
         $storyGenre=$row['genre'];
+
+        $period=$row['startDate'].' ~ '.$row['lastUpdate'];
+
+        $board_name='fiction';
+
+//        정상적으로 일일이 글쓰기하면 여기서 에피소드 개수 세도 됨. 더미데이터 쓸 때는 에피소드 개수 안맞음
+//        $number_of_episodes=$row['numberOfEpisode'];
+        $isCompleted=$row['isCompleted'];
+
+        //image 받아야 함
+
+        if($isCompleted=='Y'){
+            $isCompleted='Completed';
+        }else{
+            $isCompleted='inProgress';
+        }
+
+
+        //이 story에 총 몇 개의 like와 bookmark가 달렸는지 계산한다
+        $sql_episodeInfo = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
+        $result_episode = mysqli_query($db, $sql_episodeInfo);
+
+        $numberOfLikes=0;
+        $numberOfBookmarks=0;
+        $number_of_episodes=mysqli_num_rows($result_episode);
+
+        while($row_episode = mysqli_fetch_array($result_episode)){
+
+            $numberOfBookmarks+=$row_episode['bookmark'];
+            $numberOfLikes+=$row_episode['numberOfLikes'];
+        }
+
     }
 
     //이 소설의 episode를 db에서 가져온다 - 페이징
@@ -212,13 +249,13 @@
                     <div style="width:55%; float:left">
                         <div class="card-body d-flex flex-column align-items-start">
                             <h3 class="mb-0">
-                                <a class="text-dark">Lord of the Rings</a>
+                                <a class="text-dark">'.$storyTitle.'</a>
                             </h3>
-                            <div style="margin-top: 10px">by Jenna Doe</div>
-                            <div class="mb-1 text-muted" style="margin-top: 10px">2019.01.21 ~ 2019.06.16</div>
+                            <div style="margin-top: 10px">by '.$author_username.'</div>
+                            <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
     
-                            <div style="margin-top: 10px" class="font-italic; font-weight-bold">2 Part Stories (Completed)</div>
-                            <div style="margin-top: 10px">2000 likes | 100 comments</div>
+                            <div style="margin-top: 10px" class="font-italic; font-weight-bold">'.$number_of_episodes.' Parts ('.$isCompleted.')</div>
+                            <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfBookmarks.' bookmarks</div>
                         </div>
                     </div>
     
@@ -234,10 +271,17 @@
             <div style="float:left; width:80%; margin-top: 50px">
                 <h4><?php echo $number_of_results?> Parts</h4>
             </div>
-            <div style="float:left; width:20%; margin-bottom: 20px; margin-top: 50px">
-                <button class="btn btn-success" style="padding-left: 20px; padding-right: 30px;"
-                onclick="location.href='page_writeNewEpisode.php?id=<?php echo $db_id?>'">+ New Part</button>
-            </div>
+            <?php
+            //로그인한 사람 = 글쓴이 -> 새글쓰기 버튼 활성화
+            if($_SESSION['email']==$author_email){
+                echo '
+                    <div style="float:left; width:20%; margin-bottom: 20px; margin-top: 50px">
+                    <button class="btn btn-success" style="padding-left: 20px; padding-right: 30px;"
+                    onclick="location.href=\'page_writeNewEpisode.php?id='.$db_id.'\'">+ New Part</button>
+                   </div>
+                ';
+            }
+            ?>
 
             <table class="table table-hover">
                 <thead>
@@ -257,7 +301,7 @@
                     $index = $number_of_results - ($page - 1) * $results_per_page - $k;
 
                     echo '
-                     <tr onclick="location.href=\'read_post.php?ep_id='.$row['id'].'\'">
+                     <tr onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$row['id'].'\'">
                         <th scope="row">' . $index . '</th>
                         <td>' . $row['title'] . '</td>
                         <td>' . $row['date'] . '</td>
