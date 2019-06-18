@@ -113,8 +113,26 @@ if(isset($_POST['signout_btn'])) {
     <div class="container">
         <header class="blog-header py-3">
             <div class="row flex-nowrap justify-content-between align-items-center">
-                <div class="col-4">
-                    <a class="blog-header-logo text-dark" style="font-size: 45px; font-family: Times New Roman;" href="#">ReadMe</a>
+                <div class="col-6">
+                    <a class="blog-header-logo text-dark" style="font-size: 45px; margin-right:30px; font-family: Times New Roman;" href="#">ReadMe</a>
+<!--                    <div class="btn-group">-->
+<!--                        <button style="background-color: transparent; font-size: 25px" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+<!--                            Browse-->
+<!--                        </button>-->
+<!--                        <div class="dropdown-menu">-->
+<!--                            <a class="dropdown-item" href="boards/page_CreateNewStory.php">Create a New Story</a>-->
+<!--                            <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="btn-group">-->
+<!--                        <button style="background-color: transparent; font-size: 25px;" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+<!--                            Community-->
+<!--                        </button>-->
+<!--                        <div class="dropdown-menu">-->
+<!--                            <a class="dropdown-item" href="boards/page_CreateNewStory.php">Create a New Story</a>-->
+<!--                            <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </div>
 
                 <form class="form-inline">
@@ -141,7 +159,7 @@ if(isset($_POST['signout_btn'])) {
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">My Page</a>
+                                <a class="dropdown-item" href="boards/myPage.php">Library</a>
                                 <form method="post" action="index.php"><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
                         </div>
@@ -157,11 +175,11 @@ if(isset($_POST['signout_btn'])) {
 
         <div class="nav-scroller py-1 mb-2">
             <nav class="nav d-flex justify-content-between bg-light">
-                <a class="p-2 text-muted" style="margin-left: 80px;" href="#">Fandom</a>
-                <a class="p-2 text-muted" href="boards/mainPage.php?board=fiction">Fiction</a>
+<!--                <a class="p-2 text-muted" style="margin-left: 80px;" href="#">Fandom</a>-->
+                <a class="p-2 text-muted" style="margin-left: 80px;" href="boards/mainPage.php?board=fiction">Fiction</a>
                 <a class="p-2 text-muted" href="boards/mainPage.php?board=non-fiction">Non-fiction</a>
                 <a class="p-2 text-muted" href="#">Community</a>
-                <a class="p-2 text-muted" href="#">Hot 100</a>
+<!--                <a class="p-2 text-muted" href="#">Hot 100</a>-->
                 <a class="p-2 text-muted" style="margin-right: 80px;" href="#">About</a>
             </nav>
         </div>

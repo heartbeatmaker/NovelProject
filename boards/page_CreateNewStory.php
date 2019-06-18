@@ -159,7 +159,7 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
                 <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | Create a New Story
             </div>
             <div>
-                <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='mainPage.php'">Cancel</button>
+                <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='../index.php'">Cancel</button>
             </div>
         </div>
     </header>

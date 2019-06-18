@@ -110,7 +110,7 @@ if(isset($_POST['signout_btn'])) {
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">My Page</a>
+                                <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
                         </div>

@@ -11,7 +11,7 @@
     if($board_name=='fiction'){
         $sql_tableName='novelProject_episodeInfo';
     }else if($board_name=='non-fiction'){
-//        $sql_tableName=''
+        $sql_tableName='novelProject_nonfiction';
     }
 
 
@@ -179,7 +179,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
-    <title>ReadMe | Fiction</title>
+    <title>ReadMe | <?php echo $board_name?></title>
 </head>
 <body>
 
@@ -187,8 +187,8 @@
 <div class="container">
     <header class="blog-header py-3">
         <div class="row flex-nowrap justify-content-between align-items-center">
-            <div class="col-4" style="font-size: 30px; font-family: Times New Roman;">
-                <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | Fiction
+            <div class="col-6" style="font-size: 30px; font-family: Times New Roman;">
+                <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | <?php echo $board_name?>
             </div>
 
             <form class="form-inline">
@@ -215,7 +215,7 @@
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">My Page</a>
+                                <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
                         </div>
