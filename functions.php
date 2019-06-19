@@ -15,4 +15,12 @@ function generateRandomString($length = 6)
     return $randomString;
 }
 
+
+function generateRandomInt($max){
+    $randomNum = mt_rand(1, $max);
+    return $randomNum;
+}
+
+
+
 ?>

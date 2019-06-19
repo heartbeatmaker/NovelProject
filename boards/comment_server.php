@@ -30,24 +30,9 @@
         push_log("comment) date= ".$date);
         push_log("comment) episode_db_id= ".$episode_db_id);
 
-        //원래 댓글 몇 개 있었는지 확인 - 댓글 개수 업데이트용
-        $sql = "SELECT*FROM novelProject_episodeInfo WHERE id='$episode_db_id'";
-        $result = mysqli_query($db, $sql);
-
-        $numberOfComments='';
-        if(mysqli_num_rows($result)==1){
-            $row = mysqli_fetch_array($result);
-
-            $numberOfComments=$row['numberOfComments'];
-            push_log("comment) 최초 numberOfComments= ".$numberOfComments);
-
-            $numberOfComments+=1;
-
-            push_log("comment) 추가된 numberOfComments= ".$numberOfComments);
-        }
 
         //episode db에 댓글 수를 추가한다
-        $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= '$numberOfComments' WHERE id='$episode_db_id'";
+        $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= numberOfComments + 1 WHERE id='$episode_db_id'";
 
         //받은 값을 댓글 db에 저장한다
         $query_comment = "INSERT INTO novelProject_comment (writer_username, writer_email, content, date, episode_db_id) VALUES ('$name', '$email', '$comment', '$date', '$episode_db_id')";
@@ -172,6 +157,11 @@
         $comment_writer_email = $_POST['writer_email'];
         $comment_db_id = $_POST['id'];
 
+        $query = "SELECT*FROM novelProject_comment WHERE id =".$comment_db_id;
+        $result = mysqli_query($db, $query);
+        $row = mysqli_fetch_array($result);
+        $episode_db_id = $row['episode_db_id'];
+
         $currentUser_email = $_SESSION['email'];
 
         $delete_result='fail';
@@ -179,7 +169,9 @@
         if($comment_writer_email==$currentUser_email){
 
             $query = "DELETE FROM novelProject_comment WHERE id=".$comment_db_id;
+            $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= numberOfComments - 1 WHERE id='$episode_db_id'";
             mysqli_query($db, $query);
+            mysqli_query($db, $query_episodeInfo);
 
             $delete_result = 'success';
 

@@ -2,6 +2,7 @@
     require_once  '/usr/local/apache/security_files/connect.php';
     require_once '../session.php';
     require_once '../log/log.php';
+    require_once '../functions.php';
 
     global $db;
 
@@ -205,6 +206,9 @@
 
             <?php
 
+            $randomNumber = generateRandomInt(25);
+            $img_src = $randomNumber.'.jpg';
+
             //현재 로그인한 사용자와 이 이야기를 쓴 작가가 동일인물인지 확인
             //동일인물이라면, 책 세부내용을 띄워주지 않는다(이미 전 화면에서 확인했으므로)
             if($_SESSION['email']==$author_email){
@@ -212,7 +216,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                        <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                        <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">

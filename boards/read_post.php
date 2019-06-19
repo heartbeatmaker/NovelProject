@@ -10,6 +10,10 @@
 
     if($board_name=='fiction'){
         $sql_tableName = 'novelProject_episodeInfo';
+    }else if($board_name=='non-fiction'){
+        $sql_tableName = 'novelProject_nonfiction';
+    }else if($board_name=='community'){
+        $sql_tableName = 'novelProject_community';
     }
 
     //이 episode가 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
@@ -125,9 +129,11 @@
         $sql_episodeInfo = "DELETE FROM ".$sql_tableName." WHERE id='$episode_db_id'";
         mysqli_query($db, $sql_episodeInfo);
 
-        //story db에서 episode 개수 수정
-        $sql_storyInfo = "UPDATE novelProject_storyInfo SET numberOfEpisode= numberOfEpisode - 1 WHERE id='$story_db_id'";
-        mysqli_query($db, $sql_storyInfo);
+        if($board_name == 'fiction'){
+            //story db에서 episode 개수 수정
+            $sql_storyInfo = "UPDATE novelProject_storyInfo SET numberOfEpisode= numberOfEpisode - 1 WHERE id='$story_db_id'";
+            mysqli_query($db, $sql_storyInfo);
+        }
 
         header("location: ../index.php");
     }
@@ -178,8 +184,18 @@
             <div class="row flex-nowrap justify-content-between align-items-center">
                 <div class="col-8" >
                     <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
-                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id=<?php echo $story_db_id?>">
-                        | <?php echo $storyTitle?></a> by <?php echo $author_username?>
+                    <?php
+                    if($board_name=='fiction'){
+                     echo'
+                     <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id='.$story_db_id.'">
+                        | '.$storyTitle.'</a> by '.$author_username;
+                    }else{
+                        echo '
+                        <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial">
+                        | '.$board_name.'</a>
+                        ';
+                    }
+                    ?>
                 </div>
                 <?php
                 if(isset($_SESSION['email'])){

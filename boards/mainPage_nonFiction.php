@@ -1,158 +1,156 @@
 <?php
-    require_once  '/usr/local/apache/security_files/connect.php';
-    require_once '../session.php';
-    require_once '../log/log.php';
-    require_once '../functions.php';
+require_once  '/usr/local/apache/security_files/connect.php';
+require_once '../session.php';
+require_once '../log/log.php';
+require_once '../functions.php';
 
-    //게시판 이름을 get 방식으로 전달받는다
-    $board_name = $_GET['board'];
+//게시판 이름을 get 방식으로 전달받는다
+$board_name = $_GET['board'];
 
-    //db에 저장된 fiction 장르를 가져온다
-    $sql_tableName='';
-    if($board_name=='fiction'){
-        $sql_tableName='novelProject_episodeInfo';
+//db에 저장된 fiction 장르를 가져온다
+$sql_tableName='';
+if($board_name=='non-fiction'){
+    $sql_tableName='novelProject_nonfiction';
+}else if($board_name=='community'){
+    $sql_tableName='novelProject_community';
+}
+
+$genre ='';
+$sql = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
+
+global $db;
+$result = mysqli_query($db, $sql);
+
+if(mysqli_num_rows($result)==1){
+    $row = mysqli_fetch_array($result);
+    $genre_string = $row['category'];
+}
+
+
+//페이징 용도
+if(!isset($_GET['page'])){
+    $page = 1;
+}else{
+    $page = $_GET['page'];
+}
+
+
+if(isset($_GET['tag'])){
+    $tag = $_GET['tag'];
+
+
+    if(isset($_GET['sort'])){ //태그를 설정한 상태에서 인기순 or 최신순으로 분류할 때
+        $sort = $_GET['sort'];
+
+        //db에서 글을 가져온다
+        $sql_episode_tag_sort = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
+        $result = mysqli_query($db, $sql_episode_tag_sort);
+        $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+        $results_per_page = 10;//한 페이지당 10개로 제한
+        $number_of_pages = ceil($number_of_results/$results_per_page);
+        //페이지마다 몇번째 행부터 데이터를 출력할 지
+        $start_from = ($page - 1)*$results_per_page;
+
+
+        $sql='';
+        if($sort=='Rating'){
+            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+
+        }else if($sort=='New'){
+            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
+        }
+
+        //10개씩만 가져온다
+        $result = mysqli_query($db, $sql);
+
+
+    }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때
+
+        //db에서 글을 가져온다
+        $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
+        $result = mysqli_query($db, $sql_episode_tag);
+        $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+        $results_per_page = 10;//한 페이지당 10개로 제한
+        $number_of_pages = ceil($number_of_results/$results_per_page);
+        //페이지마다 몇번째 행부터 데이터를 출력할 지
+        $start_from = ($page - 1)*$results_per_page;
+
+
+        //10개씩만 가져온다
+        $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' LIMIT ".$start_from .",".$results_per_page;
+        $result = mysqli_query($db, $sql);
+
+
     }
 
-    $genre ='';
-    $sql = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
 
+}else{ //처음 이 페이지에 들어오거나, 분류 없이 페이지 넘길때
+
+
+    if(isset($_GET['sort'])){
+        $sort = $_GET['sort'];
+
+        //db에서 글을 가져온다
+        $sql_episode_sort = "SELECT*FROM ".$sql_tableName;
+        $result = mysqli_query($db, $sql_episode_sort);
+        $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+        $results_per_page = 10;//한 페이지당 10개로 제한
+        $number_of_pages = ceil($number_of_results/$results_per_page);
+        //페이지마다 몇번째 행부터 데이터를 출력할 지
+        $start_from = ($page - 1)*$results_per_page;
+
+
+        $sql='';
+        if($sort=='Rating'){
+            $sql = "SELECT*FROM ".$sql_tableName." ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+
+        }else if($sort=='New'){
+            $sql = "SELECT*FROM ".$sql_tableName." ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
+        }
+
+        //10개씩만 가져온다
+        $result = mysqli_query($db, $sql);
+
+    }else{ //아무 분류를 하지 않았을 때
+
+        //db에서 글을 가져온다
+        $sql_episode_only = "SELECT*FROM ".$sql_tableName;
+        $result = mysqli_query($db, $sql_episode_only);
+        $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
+
+        $results_per_page = 10;//한 페이지당 10개로 제한
+        $number_of_pages = ceil($number_of_results/$results_per_page);
+        //페이지마다 몇번째 행부터 데이터를 출력할 지
+        $start_from = ($page - 1)*$results_per_page;
+
+
+        //10개씩만 가져온다
+        $sql = "SELECT*FROM ".$sql_tableName." LIMIT ".$start_from .",".$results_per_page;
+        $result = mysqli_query($db, $sql);
+
+    }
+
+}
+
+
+
+if(isset($_POST['signout_btn'])) {
+
+    $email = $_SESSION['email'];
+    push_log($email . " sign out");
+
+    //해당 사용자의 db정보를 수정한다
     global $db;
-    $result = mysqli_query($db, $sql);
+    $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
+    mysqli_query($db, $query_deleteInfo);
 
-    if(mysqli_num_rows($result)==1){
-        $row = mysqli_fetch_array($result);
-        $genre_string = $row['category'];
-    }
+    $_SESSION = array(); //세션 변수 전체를 초기화한다
 
-
-    //페이징 용도
-    if(!isset($_GET['page'])){
-        $page = 1;
-    }else{
-        $page = $_GET['page'];
-    }
-
-
-    if(isset($_GET['tag'])){
-        $tag = $_GET['tag'];
-        
-
-        if(isset($_GET['sort'])){ //태그를 설정한 상태에서 인기순 or 최신순으로 분류할 때
-            $sort = $_GET['sort'];
-
-            //이 소설의 episode를 db에서 가져온다
-            //이 소설의 episode가 총 몇 개인지 확인
-            $sql_episode_tag_sort = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
-            $result = mysqli_query($db, $sql_episode_tag_sort);
-            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
-
-            $results_per_page = 10;//한 페이지당 10개로 제한
-            $number_of_pages = ceil($number_of_results/$results_per_page);
-            //페이지마다 몇번째 행부터 데이터를 출력할 지
-            $start_from = ($page - 1)*$results_per_page;
-
-
-            $sql='';
-            if($sort=='Rating'){
-                $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
-
-            }else if($sort=='New'){
-                $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
-            }
-
-            //10개씩만 가져온다
-            $result = mysqli_query($db, $sql);
-
-
-        }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때
-
-            //이 소설의 episode를 db에서 가져온다
-            //이 소설의 episode가 총 몇 개인지 확인
-            $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
-            $result = mysqli_query($db, $sql_episode_tag);
-            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
-
-            $results_per_page = 10;//한 페이지당 10개로 제한
-            $number_of_pages = ceil($number_of_results/$results_per_page);
-            //페이지마다 몇번째 행부터 데이터를 출력할 지
-            $start_from = ($page - 1)*$results_per_page;
-
-
-            //10개씩만 가져온다
-            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' LIMIT ".$start_from .",".$results_per_page;
-            $result = mysqli_query($db, $sql);
-
-
-        }
-
-
-    }else{ //처음 이 페이지에 들어오거나, 분류 없이 페이지 넘길때
-
-
-        if(isset($_GET['sort'])){
-            $sort = $_GET['sort'];
-
-            //이 소설의 episode를 db에서 가져온다
-            //이 소설의 episode가 총 몇 개인지 확인
-            $sql_episode_sort = "SELECT*FROM ".$sql_tableName;
-            $result = mysqli_query($db, $sql_episode_sort);
-            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
-
-            $results_per_page = 10;//한 페이지당 10개로 제한
-            $number_of_pages = ceil($number_of_results/$results_per_page);
-            //페이지마다 몇번째 행부터 데이터를 출력할 지
-            $start_from = ($page - 1)*$results_per_page;
-
-
-            $sql='';
-            if($sort=='Rating'){
-                $sql = "SELECT*FROM ".$sql_tableName." ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
-
-            }else if($sort=='New'){
-                $sql = "SELECT*FROM ".$sql_tableName." ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
-            }
-
-            //10개씩만 가져온다
-            $result = mysqli_query($db, $sql);
-
-        }else{ //아무 분류를 하지 않았을 때
-
-            //이 소설의 episode를 db에서 가져온다
-            //이 소설의 episode가 총 몇 개인지 확인
-            $sql_episode_only = "SELECT*FROM ".$sql_tableName;
-            $result = mysqli_query($db, $sql_episode_only);
-            $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
-
-            $results_per_page = 10;//한 페이지당 10개로 제한
-            $number_of_pages = ceil($number_of_results/$results_per_page);
-            //페이지마다 몇번째 행부터 데이터를 출력할 지
-            $start_from = ($page - 1)*$results_per_page;
-
-
-            //10개씩만 가져온다
-            $sql = "SELECT*FROM ".$sql_tableName." LIMIT ".$start_from .",".$results_per_page;
-            $result = mysqli_query($db, $sql);
-
-        }
-
-    }
-
-
-
-    if(isset($_POST['signout_btn'])) {
-
-        $email = $_SESSION['email'];
-        push_log($email . " sign out");
-
-        //해당 사용자의 db정보를 수정한다
-        global $db;
-        $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
-        mysqli_query($db, $query_deleteInfo);
-
-        $_SESSION = array(); //세션 변수 전체를 초기화한다
-
-        echo "<script>alert(\"Bye! \");</script>";
-    }
+    echo "<script>alert(\"Bye! \");</script>";
+}
 ?>
 
 <!doctype html>
@@ -233,7 +231,7 @@
     <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 40px; margin-bottom: 30px;">
         <p>Refine by tag</p>
         <button class="btn btn-outline-success" style="margin:10px"
-        onclick="location.href='mainPage.php?board=<?php echo $board_name?>'">All</button>
+                onclick="location.href='mainPage_nonFiction.php?board=<?php echo $board_name?>'">All</button>
         <?php
 
         //string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
@@ -246,11 +244,11 @@
             //선택된 장르의 버튼색깔을 active로 바꿔준다
             if($genre_after_split==$tag){
                 echo '<button class="btn btn-outline-success active" style="margin:10px"
-            onclick="location.href=\'mainPage.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
+            onclick="location.href=\'mainPage_nonFiction.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
 
             }else{
                 echo '<button class="btn btn-outline-success" style="margin:10px"
-            onclick="location.href=\'mainPage.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
+            onclick="location.href=\'mainPage_nonFiction.php?board='.$board_name.'&tag='.$genre_after_split.'\'">'.$genre_after_split.'</button>';
             }
         }
         ?>
@@ -274,13 +272,13 @@
                         <?php
                         if($tag!=null){
                             echo '
-                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&sort=Rating">Rating</a>
-                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&sort=New">New</a>
+                              <a class="dropdown-item" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&sort=Rating">Rating</a>
+                              <a class="dropdown-item" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&sort=New">New</a>
                             ';
                         }else{
                             echo '
-                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&sort=Rating">Rating</a>
-                              <a class="dropdown-item" href="mainPage.php?board='.$board_name.'&sort=New">New</a>
+                              <a class="dropdown-item" href="mainPage_nonFiction.php?board='.$board_name.'&sort=Rating">Rating</a>
+                              <a class="dropdown-item" href="mainPage_nonFiction.php?board='.$board_name.'&sort=New">New</a>
                             ';
                         }
 
@@ -294,13 +292,12 @@
 
             while($row = mysqli_fetch_array($result)){
 
-                $story_db_id=$row['story_db_id'];
+                $title=$row['title'];
+                $description=$row['description'];
+                $author_username=$row['author_username'];
                 $genre = $row['genre'];
                 $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
-
                 //image 받아야함
-                $title=$row['title'];
-                $author_username=$row['author_username'];
                 $date=$row['date'];
                 $numberOfLikes = $row['numberOfLikes'];
                 $numberOfComments = $row['numberOfComments'];
@@ -313,33 +310,21 @@
                     $date_modified = 'Today '.explode(' ',$date)[1];
                 }
 
-                //storyInfo db에서 title, description 가져오기
-                $story_title='';
-                $story_description='';
-                $sql_description = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
-                $result_story = mysqli_query($db, $sql_description) or die(mysqli_error($db));
 
-                if(mysqli_num_rows($result_story)==1){
-                    $row_story = mysqli_fetch_array($result_story);
-                    $story_title=$row_story['title'];
-                    $story_description = $row_story['description'];
-                }
-
-
-                $randomNumber = generateRandomInt(25);
-                $img_src = $randomNumber.'.jpg';
+                $randomNumber = generateRandomInt(30);
+                $img_src = 'dummy ('.$randomNumber.').jpg';
 
                 echo
-                '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
+                    '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                            <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
-                                    <a class="text-dark">'.$story_title.' : '.$title.'</a>
+                                    <a class="text-dark">'.$title.'</a>
                                 </h5>
                                 <div class="mb-1 text-muted">by '.$author_username.'</div>
-                                <p class="card-text mb-auto">'.$story_description.'</p>
+                                <p class="card-text mb-auto">'.$description.'</p>
                                 <div style="margin-top: 10px; width:100%;">
                                     <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
                                     <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
@@ -371,41 +356,41 @@
                                         if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                                     for ($i=$page-2; $i<=$page+2; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     //마지막에서 5개 페이지를 보여준다
                                     for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php_nonFiction?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
@@ -416,7 +401,7 @@
                                     if($i==$page){
                                         echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                     }else{
-                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                     }
                                 }
                             }
@@ -434,41 +419,41 @@
                                         if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                                     for ($i=$page-2; $i<=$page+2; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     //마지막에서 5개 페이지를 보여준다
                                     for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
@@ -479,7 +464,7 @@
                                     if($i==$page){
                                         echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                     }else{
-                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&tag='.$tag.'&page=' . $i . '">'. $i .'</a></li>';
                                     }
                                 }
                             }
@@ -500,41 +485,41 @@
                                         if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                                     for ($i=$page-2; $i<=$page+2; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     //마지막에서 5개 페이지를 보여준다
                                     for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
@@ -545,7 +530,7 @@
                                     if($i==$page){
                                         echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                     }else{
-                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&sort='.$sort.'&page=' . $i . '">'. $i .'</a></li>';
                                     }
                                 }
                             }
@@ -562,41 +547,41 @@
                                         if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                                     for ($i=$page-2; $i<=$page+2; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
                                     //마지막 페이지로 가는 버튼
-                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
+                                    echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="_nonFiction?board='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                                 }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                                     //첫 페이지로 가는 버튼
-                                    echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
+                                    echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                                     //마지막에서 5개 페이지를 보여준다
                                     for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                                         if($i==$page){
                                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                         }else{
-                                            echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                            echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                                         }
                                     }
 
@@ -607,7 +592,7 @@
                                     if($i==$page){
                                         echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                                     }else{
-                                        echo '<li class="page-item"><a class="page-link" href="mainPage.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
+                                        echo '<li class="page-item"><a class="page-link" href="mainPage_nonFiction.php?board='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                                     }
                                 }
                             }

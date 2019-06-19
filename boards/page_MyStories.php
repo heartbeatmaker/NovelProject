@@ -2,6 +2,7 @@
 require_once  '/usr/local/apache/security_files/connect.php';
 require_once '../session.php';
 require_once '../log/log.php';
+require_once '../functions.php';
 
 $URL = "../login/login.php";
 if(!isset($_SESSION['user'])) {
@@ -181,12 +182,16 @@ if(isset($_POST['signout_btn'])) {
                    $numberOfLikes+=$row_episode['numberOfLikes'];
                }
 
+
+               $randomNumber = generateRandomInt(25);
+               $img_src = $randomNumber.'.jpg';
+
                 echo
                     '<div class="list_item" style="margin-bottom: 20px" onclick="location.href=\'page_TableOfContents.php?id='.$db_id.'\'">
                         <div class="card flex-md-row box-shadow h-md-250">
                             
                             <div style="width:25%; float:left">
-                                <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                                <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                                 
                             </div>
                             

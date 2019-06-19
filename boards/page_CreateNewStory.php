@@ -173,7 +173,7 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 <!--        북커버 삽입-->
         <aside class="col-md-3 blog-sidebar">
             <div style="text-align: center">
-                <img src="../images/1.jpg" height="300" width="200" style="margin-bottom: 20px"/>
+                <img src="../images/bookCover_dummy/1.jpg" height="300" width="200" style="margin-bottom: 20px"/>
                 <button class="btn btn-outline-secondary my-2 my-sm-0" id="insert_image">Add a Cover</button>
                 <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="change_image">Change</button>-->
                 <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="remove_image">Remove</button>-->

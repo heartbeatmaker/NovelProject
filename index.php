@@ -2,6 +2,8 @@
 require_once  '/usr/local/apache/security_files/connect.php';
 require_once 'session.php';
 require_once 'log/log.php';
+require_once 'functions.php';
+
 
 //var_dump($_SESSION);
 
@@ -177,8 +179,8 @@ if(isset($_POST['signout_btn'])) {
             <nav class="nav d-flex justify-content-between bg-light">
 <!--                <a class="p-2 text-muted" style="margin-left: 80px;" href="#">Fandom</a>-->
                 <a class="p-2 text-muted" style="margin-left: 80px;" href="boards/mainPage.php?board=fiction">Fiction</a>
-                <a class="p-2 text-muted" href="boards/mainPage.php?board=non-fiction">Non-fiction</a>
-                <a class="p-2 text-muted" href="#">Community</a>
+                <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=non-fiction">Non-fiction</a>
+                <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=community">Community</a>
 <!--                <a class="p-2 text-muted" href="#">Hot 100</a>-->
                 <a class="p-2 text-muted" style="margin-right: 80px;" href="#">About</a>
             </nav>
@@ -203,18 +205,24 @@ background-image: url('images/book.jpg')">
                 <?php
 
                 for($i=0; $i<10; $i++){
+                    $randomNumber = generateRandomInt(25);
+                    $img_src = $randomNumber.'.jpg';
+
                     echo
-                    '<div class="list_item" onclick="location.href=\'read_post.php\'" style="margin-bottom: 20px;">
+                    '<div class="list_item" onclick="location.href=\'boards/read_post.php?board=fiction&ep_id=100\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                            <img src="images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
-                                <strong class="d-inline-block mb-2 text-primary">Fiction</strong>
-                                <h4 class="mb-0">
-                                    <a class="text-dark">Lord of the Rings Chapter '.$i.'</a>
-                                </h4>
-                                <div class="mb-1 text-muted">by Jane Doe</div>
-                                <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
-                               <div style="margin-top: 10px">2000 likes | 100 comments</div>
+                                <strong class="d-inline-block mb-2 text-primary">Fiction - comedy</strong>
+                                <h5 class="mb-0">
+                                    <a class="text-dark">How I met your mother : episode 32</a>
+                                </h5>
+                                <div class="mb-1 text-muted">by jane doe</div>
+                                <p class="card-text mb-auto">description</p>
+                                <div style="margin-top: 10px; width:100%;">
+                                    <div style="float:left; width:80%">30000 views * 1000 likes * 500 comments</div>
+                                    <div class="text-muted" style="float:left; width:20%">Today 18:10:05</div>
+                                </div>
                             </div>
              
                         </div>
