@@ -1,5 +1,6 @@
 <?php
 require_once '../session.php';
+global $db;
 
 
 if(isset($_POST['signout_btn'])){
@@ -97,7 +98,7 @@ if(isset($_POST['signout_btn'])){
                 <tbody>';
                 $count=1;
 
-                $sql = "SELECT*FROM chat_tcp WHERE isEmpty = 'N'"; //참여자가 나간 채팅방은 db에 기록만 남기고, 화면에는 표시하지 않는다
+                $sql = "SELECT*FROM chat WHERE isEmpty = 'N'"; //참여자가 나간 채팅방은 db에 기록만 남기고, 화면에는 표시하지 않는다
                 $result = mysqli_query($db, $sql);
 
                 while($row = mysqli_fetch_array($result)){?>
@@ -112,7 +113,7 @@ if(isset($_POST['signout_btn'])){
                 echo '<h2>Chat with Me</h2>
             <h6>Feel free to ask me any questions.</h6><br><br>
 
-            <form class="chat_tcp-form" method="post" action="">
+            <form class="chat-form" method="post" action="">
                 <input id="chat_name" style="width:80%; float:left; padding:10px" type="text" name="name" placeholder="Your name" required="required">
                 <button id="chat_button" type="submit" name="submit"
                         style="width:20%; padding:10px" type="text">START CHATTING</button>

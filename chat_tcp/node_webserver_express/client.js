@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var jquery = require('jquery');
-var net = require('net');
+var net = require('net'); //소켓 모듈
 
 app.use(express.urlencoded()); //body-parser
 app.use(express.json()); //body-parser

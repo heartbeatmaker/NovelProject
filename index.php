@@ -4,7 +4,7 @@ require_once 'session.php';
 require_once 'log/log.php';
 require_once 'functions.php';
 
-
+global $db;
 //var_dump($_SESSION);
 
 if(isset($_POST['signout_btn'])) {
@@ -143,6 +143,41 @@ if(isset($_POST['signout_btn'])) {
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
                     </a>
                 </form>
+
+<!--                채팅-->
+                <?php
+                if($_SESSION['user']){
+
+                    $user_email = $_SESSION['email'];
+                    $username = $_SESSION['user'];
+
+                    push_log('email '.$user_email.' entered the chat');
+
+                    $sql = "SELECT*FROM novelProject_userInfo WHERE email='$user_email'";
+                    $result = mysqli_query($db, $sql);
+                    $row = mysqli_fetch_array($result);
+
+                    $user_db_id = $row['id'];
+
+//                    echo '
+//                    <a class="text-muted" href="http://192.168.133.131:3000?id='.$user_db_id.'">
+//                        <img src="images/chat.png" style="width:30px; height:30px;margin-right: 30px">
+//                    </a>
+//                    ';
+
+                    echo '
+                
+                     <img src="images/chat.png" style="width:30px; height:30px;margin-right: 30px"
+                     onclick="window.open(\'http://192.168.133.131:3000?id='.$user_db_id.'&name='.$username.'\')">
+                   
+                    ';
+                }
+                ?>
+
+<!--                <form action="" >-->
+<!--                    <img src="images/chat.png" style="width:30px; height:30px;margin-right: 30px">-->
+<!--                </form>-->
+
                 <div>
                     <div class="btn-group">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -244,6 +279,7 @@ background-image: url('images/book.jpg')">
                     <ul class="list-group mb-3">
                         <?php
                         for($i=0; $i<5; $i++) {
+
                                 echo '
                                 <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
                                     <div>

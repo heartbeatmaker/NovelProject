@@ -1,0 +1,104 @@
+<!--chat_tcp/index.html-->
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Chat with Me</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Helvetica, Arial; }
+        form { background: #000; padding: 3px; position: fixed; bottom:
+                0;width: 100%; }
+        form input { border: 0; padding: 10px; width: 80%; float:left}
+        form button { width: 20%; background: rgb(130, 224, 255); border:
+                none; padding: 10px; float:left }
+        #client_list{ background: rgb(130, 224, 255); padding: 3px; position: fixed; top:
+                0;width: 100%; text-align: center}
+        #messages { list-style-type: none; margin-top: 20px; margin-bottom: 150px; padding: 0; }
+        #messages li { padding: 5px 10px; }
+        #messages li:nth-child(odd) { background: #eee; }
+    </style>
+</head>
+<body>
+<input id="client_list" name="client_list" readonly>
+<ul id="messages"></ul>
+<form action="" method="post" enctype="multipart/form-data">
+    <input id="name" class="name" type="text" readonly>
+    <input id="text" autocomplete="off" />
+    <button>Send</button>
+<!--    <input type="file" id="imgFile" name="imgFile" style="width:30%">-->
+<!--    <input id="file_name" readonly style="width:70%; background: black;color: grey"/>-->
+</form>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    //emit: 서버가 이벤트를 발생시킴
+    //on: 서버가 클라이언트의 이벤트를 처리함
+
+    $(() => { //이게 뭐지?
+        const socket = io(); //socket.io.서버에 접속
+        $('form').submit(() => { //form이 submit 되면(=사용자가 메시지를 입력하고 엔터를 치면)
+
+            //사용자의 이름과 메시지를 서버로 전달(emit)한다
+            socket.emit('send message', $('#name').val(), $('#text').val());
+            $('#text').val(''); //입력창 초기화
+            return false; //이건 왜 하는거지?
+
+        });
+
+
+        //나의 입장 알림(나에게)
+        socket.on('me entered', (msg) => {
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('#messages').append($('<li>').text(msg));
+        });
+
+        //나의 입장 알림(나를 제외한 모두에게)
+        //서버로부터 user entered 이벤트를 받으면
+        socket.on('user entered', (msg) => {
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('#messages').append($('<li>').text(msg));
+        });
+
+        //서버로부터 user entered 이벤트를 받으면
+        socket.on('user left', (msg) => {
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('#messages').append($('<li>').text(msg));
+        });
+
+
+        //나의 메시지를 띄워줌(나에게)
+        //서버로부터 receive message 이벤트를 받으면
+        socket.on('receive my message', (msg) => {
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('#messages').append($('<li>').text(msg));
+        });
+
+        //나의 메시지를 띄워줌(나를 제외한 모두에게)
+        //서버로부터 receive message 이벤트를 받으면
+        socket.on('receive message', (msg) => {
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('#messages').append($('<li>').text(msg));
+        });
+
+        //서버에서 emit된 set name 이벤트를 처리하는 리스너
+        socket.on('set name', function(name){
+
+            //이름을 뷰에 넣어준다
+            $('#name').val(name);
+        });
+
+        //서버에서 emit된 set name 이벤트를 처리하는 리스너
+        socket.on('print client list', function(list){
+
+            //이름을 뷰에 넣어준다
+            $('#client_list').val(list);
+        });
+    });
+</script>
+</body>
+</html>
