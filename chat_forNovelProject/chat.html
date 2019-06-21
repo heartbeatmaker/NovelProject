@@ -81,9 +81,11 @@
         }
 
         .room_name {
-            border-bottom: 1px solid #c4c4c4;
-            margin-bottom: 20px;
+            /*border-bottom: 1px solid #c4c4c4;*/
+        }
 
+        .participants {
+            font-size: 15px; color:grey; border-bottom: 1px solid #c4c4c4;
         }
 
         .sender_name {
@@ -116,6 +118,7 @@
             margin: 0;
             padding: 5px 10px 5px 12px;
             width: 100%;
+            word-break: break-all;
         }
         .time_date {
             color: #747474;
@@ -138,6 +141,7 @@
             margin: 0; color:#fff;
             padding: 5px 10px 5px 12px;
             width:100%;
+            word-break: break-all;
         }
         .outgoing_msg{ overflow:hidden; margin:15px 20px 15px;}
         .sent_msg {
@@ -176,6 +180,10 @@
             overflow-y: auto;
             padding-bottom: 20px;
         }
+
+        .msg_alert{
+           font-size:15px; color: grey; margin-top: 20px; margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -183,54 +191,162 @@
     <!--    <h3 class=" text-center">Chat</h3>-->
 
     <div class="mesgs">
-        <div class="room_name">(me), 인천팸 (3)</div>
+
+<!--        방 제목, 참여자-->
+        <div class="room_name" id="room_name"></div>
+        <div class="participants" id="participants"></div>
+
+<!--        메시지 띄워주는 영역-->
         <div class="msg_history">
-            <div class="incoming_msg">
-                <div class="incoming_msg_img">
-                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
-                </div>
-                <div class="received_msg">
-                    <div class="sender_name">name</div>
-                    <div class="received_withd_msg">
-                        <p>Test which is a new approach to have all
-                            solutions</p>
-                        <span class="time_date"> 11:01 AM    |    June 9</span></div>
-                </div>
-            </div>
-            <div class="outgoing_msg">
-                <div class="sent_msg">
-                    <p>Test which is a new approach to have all
-                        solutions</p>
-                    <span class="time_date"> 11:01 AM    |    June 9</span> </div>
-            </div>
-            <div class="incoming_msg">
-                <div class="incoming_msg_img">
-                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
-                </div>
-                <div class="received_msg">
-                    <div class="sender_name">name</div>
-                    <div class="received_withd_msg">
-                        <p>Test, which is a new approach to have</p>
-                        <span class="time_date"> 11:01 AM    |    Yesterday</span></div>
-                </div>
-            </div>
-            <div class="outgoing_msg">
-                <div class="sent_msg">
-                    <p>Apollo University, Delhi, India Test</p>
-                    <span class="time_date"> 11:01 AM    |    Today</span> </div>
-            </div>
+
+<!--            아래 주석처리 된 것: 공지메시지, 받은메시지, 보낸메시지 샘플-->
+<!--            <div class="msg_alert">-->
+<!--                someone entered the room-->
+<!--            </div>-->
+
+<!--            <div class="incoming_msg">-->
+<!--                <div class="incoming_msg_img">-->
+<!--                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">-->
+<!--                </div>-->
+<!--                <div class="received_msg">-->
+<!--                    <div class="sender_name">name</div>-->
+<!--                    <div class="received_withd_msg">-->
+<!--                        <p>Test which is a new approach to have all-->
+<!--                            solutions</p>-->
+<!--                        <span class="time_date"> 11:01 AM    |    June 9</span></div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="outgoing_msg">-->
+<!--                <div class="sent_msg">-->
+<!--                    <p>Test which is a new approach to have all-->
+<!--                        solutions</p>-->
+<!--                    <span class="time_date"> 11:01 AM    |    June 9</span> </div>-->
+<!--            </div>-->
+
 
         </div>
 
         <div class="type_msg">
-            <form class="input_msg_write" action="/msg_post" method="post">
-                <input type="text" class="type_msg" name="msg_input" placeholder="Type a message" />
+            <form class="input_msg_write" method="post">
+                <input type="text" class="type_msg" id="msg_input" name="msg_input" placeholder="Type a message" />
                 <button class="msg_send_btn" name="msg_submit_btn" type="submit"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
             </form>
         </div>
 
     </div>
 </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    //emit: 서버가 이벤트를 발생시킴
+    //on: 서버가 클라이언트의 이벤트를 처리함
+
+    $(() => { //= document.ready
+
+        const socket = io(); //socket.io.서버에 접속
+
+
+        //메시지를 보내기
+        $('form').submit(() => { //form이 submit 되면(=사용자가 메시지를 입력하고 엔터를 치면)
+
+            //사용자의 이름과 메시지를 서버로 전달(emit)한다
+            socket.emit('send message', $('#msg_input').val());
+            $('#msg_input').val(''); //입력창 초기화
+            return false; //이건 왜 하는거지?
+
+        });
+
+
+
+        //나의 입장 알림을 받음
+        socket.on('me entered', (msg) => {
+
+            var msg_append = '<div class="msg_alert">'+msg+'</div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+        //다른 사람의 입장 알림을 받음
+        socket.on('user entered', (msg) => {
+
+            var msg_append = '<div class="msg_alert">'+msg+'</div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+        //다른 사람이 채팅방 접속이 끊겼다는 알림을 받음 - 메시지를 읽지 않고 있음
+        socket.on('user disconnected', (msg) => {
+
+            var msg_append = '<div class="msg_alert">'+msg+'</div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+
+        //나의 메시지를 받음
+        socket.on('receive my message', (msg, time) => {
+
+            var msg_append = '<div class="outgoing_msg">\n' +
+                '                <div class="sent_msg">\n' +
+                '                    <p>'+msg+'</p>\n' +
+                '                    <span class="time_date">'+time+'</span> </div>\n' +
+                '            </div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+        //다른 사람들의 메시지를 받음
+        socket.on('receive message', (name, msg, time) => {
+
+            var msg_append = '<div class="incoming_msg">\n' +
+                    '                <div class="incoming_msg_img">\n' +
+                    '                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">\n' +
+                    '                </div>\n' +
+                    '                <div class="received_msg">\n' +
+                    '                    <div class="sender_name">'+name+'</div>\n' +
+                    '                    <div class="received_withd_msg">\n' +
+                    '                        <p>'+msg+'</p>\n' +
+                    '                        <span class="time_date">'+time+'</span></div>\n' +
+                    '                </div>\n' +
+                    '            </div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+        socket.on('print room name', function(name){
+
+            console.log('room name='+name);
+
+            //이름을 뷰에 넣어준다
+            $('#room_name').text('Title: '+name);
+        });
+
+
+        // 이 방 참여자 수와 명단을 출력한다
+        socket.on('print members', function(number, list){
+
+            console.log('number='+number);
+
+            $('#participants').text(number+' participants : '+list);
+        });
+
+
+    });
+
+</script>
+
 </body>
 </html>
 

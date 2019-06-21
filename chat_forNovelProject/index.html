@@ -240,6 +240,18 @@
             opacity: 0.8;
         }
 
+        .form-container .btn_full {
+            background-color: grey;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            float:left;
+            margin-bottom:10px;
+            opacity: 0.8;
+        }
+
         /* Add a red background color to the cancel button */
         .form-container .cancel {
             background-color: grey;
@@ -271,16 +283,16 @@
 <!--                헤드부분-->
                 <div class="heading_srch">
 
-<!--                    방 추가버튼인데 여기서는 필요 없어서 숨겨놓음-->
+
                     <div style="text-align: right">
-                        <button class="new_room_btn" type="button" onclick="openForm()" style="visibility: hidden"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
+                        <button class="new_room_btn" type="button" onclick="openForm()"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
                     </div>
 
                     <div class="recent_heading">
                         <h4>Joined Rooms</h4>
                     </div>
                     <div class="srch_bar">
-                        <div class="stylish-input-group">
+                        <div class="stylish-input-group" style="visibility: hidden">
                             <input type="text" class="search-bar"  placeholder="Search" >
                             <span class="input-group-addon">
                             <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button></span>
@@ -323,7 +335,7 @@
 
                 <div class="heading_srch">
                     <div style="text-align: right">
-                        <button class="new_room_btn" type="button" onclick="openForm()"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
+                        <button class="new_room_btn" type="button" onclick="openForm()" style="visibility: hidden"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
                     </div>
                     <div class="recent_heading">
                         <h4>Rooms</h4>
@@ -375,7 +387,7 @@
 <!--모달창: 방에 입장하기-->
 <div class="form-popup" id="form_joinRoom">
     <form action="" class="form-container" id="join_form">
-        <h3>Join the Chat</h3>
+        <div id="join_modal_title"><h3>Join the Chat</h3></div>
 
         <label for="room_name_join"><b>Room Name</b></label>
         <input type="text" id="room_name_join" readonly>
@@ -389,7 +401,8 @@
 <!--        <input type="text" placeholder="" name="username" id="username" required>-->
 
         <button type="submit" id="join_btn" class="btn">Join</button>
-        <button type="button" class="btn cancel" onclick="closeJoinForm()">Cancel</button>
+        <button type="button" id="join_cancel" class="btn cancel" onclick="closeJoinForm()">Cancel</button>
+        <button type="button" id="join_modal_cancel" class="btn_full" onclick="closeJoinForm()">Cancel</button>
     </form>
 </div>
 
@@ -401,11 +414,16 @@
     //emit: 서버가 이벤트를 발생시킴
     //on: 서버가 클라이언트의 이벤트를 처리함
 
+
+    //왼쪽 방 목록 = 내가 참여중인 채팅 방
+    //오른쪽 방 목록 = 모든 채팅 방
+
     $(() => { //= document.ready
 
         const socket = io(); //socket.io.서버에 접속
 
-        //기존 방 목록, 사용자가 참여중인 방 목록을 받음
+
+        //기존 방 목록, 사용자가 참여중인 방 목록을 받아서, 화면에 띄워줌
         socket.on('existing rooms', (chatInfo, userInfo) => {
 
             var joined_room='';
@@ -418,6 +436,7 @@
                 var row = chatInfo[key];
                 console.log(row.room_name+'/'+row.description+'/'+row.id);
 
+                //이 방의 id와 사용자가 참여중인 방 id가 동일하면, 이 방을 왼쪽 방 목록으로 분류한다
                 var isAlreadyJoined = false;
                 for(var i=0; i<userInfo.length; i++){
                     if(userInfo[i]==row.id){
@@ -431,26 +450,25 @@
                         '                        <div class="chat_people">\n' +
                         '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                         '                            <div class="chat_ib">\n' +
-                        '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date">1명</span></h5>\n' +
+                        '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date">'+row.numberOfMembers+'명</span></h5>\n' +
                         '                                <p id="description">'+row.description+'</p>\n' +
                         '                            </div>\n' +
                         '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'">\n'+
                         '                        </div>\n' +
                         '                    </div>';
 
-                }else{
-
-                    existing_room += '<div class="chat_list">\n' +
-                        '                        <div class="chat_people">\n' +
-                        '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
-                        '                            <div class="chat_ib">\n' +
-                        '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date">1명</span></h5>\n' +
-                        '                                <p id="description">'+row.description+'</p>\n' +
-                        '                            </div>\n' +
-                        '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'">\n'+
-                        '                        </div>\n' +
-                        '                    </div>';
                 }
+
+                existing_room += '<div class="chat_list">\n' +
+                    '                        <div class="chat_people">\n' +
+                    '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                    '                            <div class="chat_ib">\n' +
+                    '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date">1명</span></h5>\n' +
+                    '                                <p id="description">'+row.description+'</p>\n' +
+                    '                            </div>\n' +
+                    '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'">\n'+
+                    '                        </div>\n' +
+                    '                    </div>';
 
             });
 
@@ -488,6 +506,25 @@
 
             console.log(room_name_clicked+'/'+room_description_clicked+'/'+room_db_id_clicked);
 
+            //참여방을 더블클릭하면 입장하기, 나가기 버튼을 보여준다
+            var parent_id = $(this).parent().attr('id');
+            if(parent_id == 'joined_room_list'){
+
+                //모달 창의 제목을 없앤다
+                document.getElementById('join_modal_title').style.display='none';
+                $('#join_btn').text('Enter');
+                $('#join_cancel').text('Leave');
+                document.getElementById('join_cancel').style.backgroundColor = 'red';
+                document.getElementById('join_modal_cancel').style.display='visible'; //이거 안먹힘
+
+            }else if(parent_id == 'room_list'){
+                document.getElementById('join_modal_title').style.display='visible';
+                $('#join_btn').text('Join');
+                $('#join_cancel').text('Cancel');
+                document.getElementById('join_cancel').style.backgroundColor = 'grey';
+                document.getElementById('join_modal_cancel').style.display='none';
+            }
+
             openJoinForm();
 
             $('#room_name_join').val(room_name_clicked);
@@ -501,22 +538,18 @@
         $('#join_form').submit(() => {
 
             //히든타입으로 숨겨놓은 방의 id를 가져온다
+            var room_name_join = $('#room_name_join').val();
+            var room_description_join = $('#room_description_join').val();
             var room_db_id = $('#room_db_id_join').val();
 
-            socket.emit('join room', room_db_id);
-
-            //입력창 초기화
-            $('#new_room_name').val('');
-            $('#new_room_description').val('');
-            $('#room_db_id_join').val('');
-            closeForm();
+            socket.emit('join room', room_db_id, room_name_join, room_description_join);
 
             return false; //이건 왜 하는거지?
 
         });
 
 
-        //내 방이 만들어졌다는 알림을 받음
+        //내 방이 만들어졌다는 알림을 받음 - 왼쪽 방 목록 업데이트, 채팅창 띄워주기
         socket.on('my room created', (room_name, room_description, room_db_id, username, user_db_id) => {
 
             console.log('my room created. username='+username+' user_db_id='+user_db_id);
@@ -527,7 +560,7 @@
 
             console.log('room_db_id='+room_db_id);
 
-            var new_room = '<div class="chat_list active_chat">\n' +
+            var new_room = '<div class="chat_list">\n' +
                 '                        <div class="chat_people">\n' +
                 '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
@@ -538,38 +571,48 @@
                 '                        </div>\n' +
                 '                    </div>';
 
-            //방 목록의 마지막에 새 방을 추가한다
+            //왼쪽 방 목록의 마지막에 새 방을 추가한다
             $('#joined_room_list').append(new_room);
+            $('#room_list').append(new_room);
 
-            //방을 연다
+            //방을 연다 - join되지 않은 상태. chat.html에서 새로 소켓 만들어서 join함
             // window.open('chat.html?id='+user_db_id+'&name='+username, 'chat room '+room_db_id_received, 'width=520,height=600,location=no,status=no,scrollbars=yes');
             window.open('chat?id='+user_db_id+'&name='+username+'&rm='+room_db_id_received, 'chat room '+room_db_id_received, 'width=520,height=600,location=no,status=no,scrollbars=yes');
-
 
         });
 
 
-        //새로운 방이 만들어졌다는 알림을 받음
+        //새로운 방이 만들어졌다는 알림을 받음(다른 사람이 만든 방) - 오른쪽 방 목록에 방 추가
         socket.on('room created', (room_name, room_description, room_db_id) => {
 
-            var room_name_received = room_name;
-            var room_description_received = room_description;
-            var room_db_id = room_db_id;
 
             var new_room = '<div class="chat_list">\n' +
         '                        <div class="chat_people">\n' +
         '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
         '                            <div class="chat_ib">\n' +
-        '                                <h5 id="room_name">'+room_name_received+'<span class="chat_date">1명</span></h5>\n' +
-        '                                <p id="description">'+room_description_received+'</p>\n' +
+        '                                <h5 id="room_name">'+room_name+'<span class="chat_date">1명</span></h5>\n' +
+        '                                <p id="description">'+room_description+'</p>\n' +
         '                            </div>\n' +
-        '                            <input type="hidden" id="room_data" data-room_name="'+room_name_received+'" data-description="'+room_description_received+'" data-room_db_id="'+id_received+'">\n'+
+        '                            <input type="hidden" id="room_data" data-room_name="'+room_name+'" data-description="'+room_description+'" data-room_db_id="'+room_db_id+'">\n'+
         '                        </div>\n' +
         '                    </div>';
 
             //방 목록의 마지막에 새 방을 추가한다
             $('#room_list').append(new_room);
 
+
+        });
+
+
+        //남의 방에 join하기 위해 알아야 할 정보를 전달받는다
+        socket.on('info for join', (user_db_id, username, room_db_id, new_joinedRoom) => {
+
+            if(new_joinedRoom != 'old'){
+                $('#joined_room_list').prepend(new_joinedRoom);
+            }
+
+            //방을 연다 - join되지 않은 상태. chat.html에서 새로 소켓 만들어서 join함
+            window.open('chat?id='+user_db_id+'&name='+username+'&rm='+room_db_id, 'chat room '+room_db_id, 'width=520,height=600,location=no,status=no,scrollbars=yes');
 
         });
 

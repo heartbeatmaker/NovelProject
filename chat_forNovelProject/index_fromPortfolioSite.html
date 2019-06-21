@@ -36,6 +36,7 @@
 
     $(() => { //이게 뭐지?
         const socket = io(); //socket.io.서버에 접속
+
         $('form').submit(() => { //form이 submit 되면(=사용자가 메시지를 입력하고 엔터를 치면)
 
             //사용자의 이름과 메시지를 서버로 전달(emit)한다
