@@ -584,83 +584,83 @@ io.on('connection', (socket) => {
 
         //2. db 업데이트 - user db, chat db
 
-            //2-1. user db 업데이트
-            var updated_joinedChatRooms_string='';
+        //2-1. user db 업데이트
+        var updated_joinedChatRooms_string='';
 
-            //사용자가 참여중인 채팅방 목록 가져오기
-            connection.query('SELECT * FROM novelProject_userInfo WHERE id = ?', [socket.db_id], function (error, results) {
+        //사용자가 참여중인 채팅방 목록 가져오기
+        connection.query('SELECT * FROM novelProject_userInfo WHERE id = ?', [socket.db_id], function (error, results) {
 
-                var joinedChatRooms_array = '';
-                try{
+            var joinedChatRooms_array = '';
+            try{
 
-                    //사용자 정보 중에서 참여중인 방 목록만 가져와서, 배열로 만든다
-                    joinedChatRooms_array = results[0].joinedChatRooms.split(';');
-                    console.log('joinedChatRooms_string='+results[0].joinedChatRooms);
-                    console.log('joinedChatRooms_array='+joinedChatRooms_array);
+                //사용자 정보 중에서 참여중인 방 목록만 가져와서, 배열로 만든다
+                joinedChatRooms_array = results[0].joinedChatRooms.split(';');
+                console.log('joinedChatRooms_string='+results[0].joinedChatRooms);
+                console.log('joinedChatRooms_array='+joinedChatRooms_array);
 
-                    //배열에서 이 방을 삭제한다
-                    for(var n=joinedChatRooms_array.length; n>0; n--){
-                        if(joinedChatRooms_array[n] == room_db_id || joinedChatRooms_array[n] == ''){
-                            console.log('JoinedChatRooms_array['+n+']'+joinedChatRooms_array[n]+'/ room_db_id='+room_db_id);
-                            delete joinedChatRooms_array[n];
-                        }
+                //배열에서 이 방을 삭제한다
+                for(var n=joinedChatRooms_array.length; n>0; n--){
+                    if(joinedChatRooms_array[n] == room_db_id || joinedChatRooms_array[n] == ''){
+                        console.log('JoinedChatRooms_array['+n+']'+joinedChatRooms_array[n]+'/ room_db_id='+room_db_id);
+                        delete joinedChatRooms_array[n];
                     }
-
-                    //이 배열을 다시 string 형태로 만든다
-                    //join하고 나면 맨 뒤에 ;가 붙어있다. 이것을 없애준다
-                    var updated_joinedChatRooms_string_before = joinedChatRooms_array.join(';');
-                    console.log('updated_joinedChatRooms_string_before='+updated_joinedChatRooms_string_before);
-
-                    var lastChar = updated_joinedChatRooms_string_before.charAt(updated_joinedChatRooms_string_before.length-1);
-
-                    if(lastChar == ';'){
-                        updated_joinedChatRooms_string = updated_joinedChatRooms_string_before.slice(0, updated_joinedChatRooms_string_before.length-1);
-                    }
-                    console.log('updated_joinedChatRooms_string='+updated_joinedChatRooms_string);
-
-
-
-                    //수정된 참여방 목록을 사용자 db에 저장한다
-                    connection.query('UPDATE novelProject_userInfo SET joinedChatRooms = ? WHERE id = ?', [updated_joinedChatRooms_string, socket.db_id], function(err, result){
-                        if(err){
-                            console.log(err);
-                        }
-                    });
-
-                }catch (e) {
-                    console.log('error occured:'+e);
                 }
 
-            });
+                //이 배열을 다시 string 형태로 만든다
+                //join하고 나면 맨 뒤에 ;가 붙어있다. 이것을 없애준다
+                var updated_joinedChatRooms_string_before = joinedChatRooms_array.join(';');
+                console.log('updated_joinedChatRooms_string_before='+updated_joinedChatRooms_string_before);
+
+                var lastChar = updated_joinedChatRooms_string_before.charAt(updated_joinedChatRooms_string_before.length-1);
+
+                if(lastChar == ';'){
+                    updated_joinedChatRooms_string = updated_joinedChatRooms_string_before.slice(0, updated_joinedChatRooms_string_before.length-1);
+                }
+                console.log('updated_joinedChatRooms_string='+updated_joinedChatRooms_string);
 
 
-            // 2-2. chat db 업데이트
-            console.log('about to update chat db. updated numberOfMembers='+individual_roomInfo.length);
-            if(individual_roomInfo.length == 0){//최후의 1인이 떠났으면 -> 서버객체, chat db, 클라이언트 방 목록 업데이트
 
-                console.log('roomInfo key length before update='+Object.keys(roomInfo).length);
-
-                //2-2-1. 서버 객체에서 이 방을 삭제
-                delete roomInfo[room_db_id];
-                console.log('roomInfo updated. There shouldnt be a room with id '+room_db_id+'. roomInfo key length: '+Object.keys(roomInfo).length);
-
-                //2-2-2. chat db에서 이 방을 삭제
-                connection.query('DELETE FROM novelProject_chatInfo WHERE id = ?', [room_db_id], function(err, result) {
-                });
-
-                //2-2-3. 방 목록(all rooms; 오른쪽 방 목록)에서 이 방을 삭제하라고 모든 클라이언트에게 메시지 보내기
-                io.emit('delete room', room_db_id);
-
-
-            }else{ //아직 이 방에 사람이 남아있으면 -> 사람 수만 -1 해준다
-
-                connection.query('UPDATE novelProject_chatInfo SET numberOfMembers = numberOfMembers -1 WHERE id = ?', [room_db_id], function(err, result){
+                //수정된 참여방 목록을 사용자 db에 저장한다
+                connection.query('UPDATE novelProject_userInfo SET joinedChatRooms = ? WHERE id = ?', [updated_joinedChatRooms_string, socket.db_id], function(err, result){
                     if(err){
                         console.log(err);
                     }
                 });
 
+            }catch (e) {
+                console.log('error occured:'+e);
             }
+
+        });
+
+
+        // 2-2. chat db 업데이트
+        console.log('about to update chat db. updated numberOfMembers='+individual_roomInfo.length);
+        if(individual_roomInfo.length == 0){//최후의 1인이 떠났으면 -> 서버객체, chat db, 클라이언트 방 목록 업데이트
+
+            console.log('roomInfo key length before update='+Object.keys(roomInfo).length);
+
+            //2-2-1. 서버 객체에서 이 방을 삭제
+            delete roomInfo[room_db_id];
+            console.log('roomInfo updated. There shouldnt be a room with id '+room_db_id+'. roomInfo key length: '+Object.keys(roomInfo).length);
+
+            //2-2-2. chat db에서 이 방을 삭제
+            connection.query('DELETE FROM novelProject_chatInfo WHERE id = ?', [room_db_id], function(err, result) {
+            });
+
+            //2-2-3. 방 목록(all rooms; 오른쪽 방 목록)에서 이 방을 삭제하라고 모든 클라이언트에게 메시지 보내기
+            io.emit('delete room', room_db_id);
+
+
+        }else{ //아직 이 방에 사람이 남아있으면 -> 사람 수만 -1 해준다
+
+            connection.query('UPDATE novelProject_chatInfo SET numberOfMembers = numberOfMembers -1 WHERE id = ?', [room_db_id], function(err, result){
+                if(err){
+                    console.log(err);
+                }
+            });
+
+        }
 
 
 

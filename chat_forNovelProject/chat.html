@@ -237,6 +237,9 @@
     </div>
 </div>
 
+<script src="functions.js"></script>
+<!--시간 포맷 변환해주는 코드-->
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
@@ -246,6 +249,8 @@
     $(() => { //= document.ready
 
         const socket = io(); //socket.io.서버에 접속
+
+        var my_db_id = '';
 
 
         //메시지를 보내기
@@ -259,15 +264,21 @@
         });
 
 
-
-        //나의 입장 알림을 받음
-        socket.on('me entered', (msg) => {
-
-            var msg_append = '<div class="msg_alert">'+msg+'</div>';
-
-            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
-            $('.msg_history').append(msg_append);
+        //이 사용자의 id를 받아놓는다. 나중에 창 강제종료할 때 사용
+        socket.on('my id', (user_db_id) =>{
+            console.log('my id='+user_db_id);
+            my_db_id = user_db_id;
         });
+
+
+        //나의 입장 알림을 받음 - 지금 사용 x
+        // socket.on('me entered', (msg) => {
+        //
+        //     var msg_append = '<div class="msg_alert">'+msg+'</div>';
+        //
+        //     //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+        //     $('.msg_history').append(msg_append);
+        // });
 
 
         //다른 사람의 입장 알림을 받음
@@ -280,6 +291,62 @@
         });
 
 
+        //기존에 참여하던 방에 입장하면, 원래 있던 메시지를 띄워줌
+        socket.on('print saved messages', (user_db_id, joinedTime, msg_array) => {
+
+            //user_db_id를 기준으로, 내가 보낸 메시지 / 남이 보낸 메시지를 좌우로 분리하여 화면에 띄워준다
+            for (var m = 0; m < msg_array.length; m++) {
+
+                var messageInfo_string = msg_array[m];
+                var messageInfo_array = messageInfo_string.split(';~;');
+
+                //메시지 보낸 사람의 db id, 닉네임, 메시지내용, 보낸시각
+                var saved_user_db_id = messageInfo_array[0];
+                var saved_username = messageInfo_array[1];
+                var saved_message = messageInfo_array[2];
+                var saved_time = new Date(messageInfo_array[3]);
+                var saved_time_modified = saved_time.format("hh:mm a/p | MM-dd");
+
+
+                var user_joinedTime = new Date(joinedTime);
+
+                if(saved_time >= user_joinedTime){ //내가 이 방에 최초로 가입한 시각 이후에 주고받은 메시지만 띄워준다
+
+                    var message_append = '';
+                    if (saved_user_db_id == user_db_id) { //내가 보낸 메시지라면 -> 내가보낸 메시지 클래스로 지정
+
+                        message_append = '<div class="outgoing_msg">\n' +
+                            '                <div class="sent_msg">\n' +
+                            '                    <p>'+saved_message+'</p>\n' +
+                            '                    <span class="time_date">'+saved_time_modified+'</span> </div>\n' +
+                            '            </div>';
+
+
+                    } else { //남이 보낸 메시지라면 -> 남한테 받은 메시지 클래스로 지정
+
+                        message_append = '<div class="incoming_msg">\n' +
+                            '                <div class="incoming_msg_img">\n' +
+                            '                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">\n' +
+                            '                </div>\n' +
+                            '                <div class="received_msg">\n' +
+                            '                    <div class="sender_name">'+saved_username+'</div>\n' +
+                            '                    <div class="received_withd_msg">\n' +
+                            '                        <p>'+saved_message+'</p>\n' +
+                            '                        <span class="time_date">'+saved_time_modified+'</span></div>\n' +
+                            '                </div>\n' +
+                            '            </div>';
+
+                    }
+
+                    //화면에 띄워주기
+                    $('.msg_history').append(message_append);
+
+                }
+
+            }
+        });
+
+
         //다른 사람이 채팅방 접속이 끊겼다는 알림을 받음 - 메시지를 읽지 않고 있음
         socket.on('user disconnected', (msg) => {
 
@@ -287,6 +354,27 @@
 
             //메시지 리스트(messages)의 마지막에 메시지를 추가한다
             $('.msg_history').append(msg_append);
+        });
+
+
+        //다른 사람이 채팅방을 나갔다는 알림을 받음
+        socket.on('user left', (msg) => {
+
+            var msg_append = '<div class="msg_alert">'+msg+'</div>';
+
+            //메시지 리스트(messages)의 마지막에 메시지를 추가한다
+            $('.msg_history').append(msg_append);
+        });
+
+
+        //채팅창을 닫으라는 메시지를 받음 -> 이 채팅방의 소켓이 자동으로 해제됨(서버에서 처리할 필요x)
+        socket.on('close window', (someones_user_db_id) => {
+
+            //someones_user_db_id = 이 방 참여자 중에, 로비에서 방 leave를 누른 사람의 user id
+            //지금 사용자 == leave를 누른 사용자의 user id 인지 확인한다
+            if(my_db_id == someones_user_db_id){
+                window.close();
+            }
         });
 
 
@@ -344,6 +432,93 @@
 
 
     });
+
+
+    Date.prototype.format = function (f) {
+
+        if (!this.valueOf()) return " ";
+
+
+        var weekKorName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+
+        var weekKorShortName = ["일", "월", "화", "수", "목", "금", "토"];
+
+        var weekEngName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        var weekEngShortName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        var d = this;
+
+
+        return f.replace(/(yyyy|yy|MM|dd|KS|KL|ES|EL|HH|hh|mm|ss|a\/p)/gi, function ($1) {
+
+            switch ($1) {
+
+                case "yyyy":
+                    return d.getFullYear(); // 년 (4자리)
+
+                case "yy":
+                    return (d.getFullYear() % 1000).zf(2); // 년 (2자리)
+
+                case "MM":
+                    return (d.getMonth() + 1).zf(2); // 월 (2자리)
+
+                case "dd":
+                    return d.getDate().zf(2); // 일 (2자리)
+
+                case "KS":
+                    return weekKorShortName[d.getDay()]; // 요일 (짧은 한글)
+
+                case "KL":
+                    return weekKorName[d.getDay()]; // 요일 (긴 한글)
+
+                case "ES":
+                    return weekEngShortName[d.getDay()]; // 요일 (짧은 영어)
+
+                case "EL":
+                    return weekEngName[d.getDay()]; // 요일 (긴 영어)
+
+                case "HH":
+                    return d.getHours().zf(2); // 시간 (24시간 기준, 2자리)
+
+                case "hh":
+                    return ((h = d.getHours() % 12) ? h : 12).zf(2); // 시간 (12시간 기준, 2자리)
+
+                case "mm":
+                    return d.getMinutes().zf(2); // 분 (2자리)
+
+                case "ss":
+                    return d.getSeconds().zf(2); // 초 (2자리)
+
+                case "a/p":
+                    return d.getHours() < 12 ? "am" : "pm"; // 오전/오후 구분
+
+                default:
+                    return $1;
+
+            }
+
+        });
+
+    };
+
+
+    String.prototype.string = function (len) {
+        var s = '', i = 0;
+        while (i++ < len) {
+            s += this;
+        }
+        return s;
+    };
+
+    String.prototype.zf = function (len) {
+        return "0".string(len - this.length) + this;
+    };
+
+    Number.prototype.zf = function (len) {
+        return this.toString().zf(len);
+    };
+
 
 </script>
 
