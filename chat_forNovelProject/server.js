@@ -4,7 +4,7 @@
 
 const express = require('express');
 const app = express();//애플리케이션 객체 생성
-const http = require('http').createServer(app);// 웹서버 생성 후 express과 연결
+const http = require('http').createServer(app); 연결
 const io = require('socket.io')(http);//이 http를 다시 socket.io에 연결한다
 
 
