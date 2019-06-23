@@ -33,6 +33,13 @@ app.use(session({ //세션을 적용한다
 var id_received=''; //사용자의 db id와 닉네임
 var username_received='';
 
+
+//정적인 파일을 서비스 하는 법 = 서버에 있는 파일(이미지, 텍스트)을 클라이언트에게 전달
+//public 이라는 폴더를 만들고, 그 안에 파일을 넣는다
+//ex) http://localhost:3000/bento 로 접속했을때 bento.png 이미지가 출력된다
+app.use(express.static('public'));
+
+
 //app.get(): express 모듈이 제공하는 요청 핸들러(서버가 특정 요청을 받을 때마다 실행됨)
 app.get('/', (req, res) => { // '/'주소로 클라이언트로부터 GET 요청이 올 때 처리하는 코드
 
@@ -297,7 +304,7 @@ io.on('connection', (socket) => {
             });
 
 
-            if(msg != '') {
+            if(msg != '') { //메시지가 비어있지 않으면 메시지를 띄워준다
 
                 //나의 메시지를 나에게 띄워줌
                 io.to(socket.id).emit('receive my message', msg, getTime());
@@ -374,7 +381,8 @@ io.on('connection', (socket) => {
 
             //db에 방 정보를 저장하기
             var time = new Date();
-            var info={room_name: room_name, description: room_description, created_time: time, numberOfMembers: 1};
+            var image_number = getRandomNumber(25)
+            var info={room_name: room_name, description: room_description, created_time: time, numberOfMembers: 1, image: image_number};
             var room_db_id;
 
             connection.query('INSERT INTO novelProject_chatInfo SET ?', info, function(err, result) {
@@ -385,10 +393,10 @@ io.on('connection', (socket) => {
                 console.log('a room created: '+room_name+'/'+room_description+'/'+result.insertId);
 
                 //방 추가 사실을 알림(나에게)
-                io.to(socket.id).emit('my room created', room_name, room_description, result.insertId, socket.username, socket.db_id);
+                io.to(socket.id).emit('my room created', room_name, room_description, result.insertId, socket.username, socket.db_id, image_number);
 
                 //방 추가 사실을 알림(나를 제외한 그룹멤버에게)
-                socket.broadcast.emit('room created', room_name, room_description, result.insertId);
+                socket.broadcast.emit('room created', room_name, room_description, result.insertId, image_number);
             });
 
 
@@ -436,7 +444,7 @@ io.on('connection', (socket) => {
         //사용자가 어떤 채팅방에 참여하겠다는 알림을 받음
         //중복확인 후, 사용자의 db와 방db를 업데이트한다
         //중복확인: 사용자가 이미 이 방에 참여중인지 확인
-        socket.on('join room', (room_db_id, room_name, room_description) => {
+        socket.on('join room', (room_db_id, room_name, room_description, image_number) => {
 
 
             //해당 사용자의 정보(참여방 목록)을 가져온다
@@ -496,14 +504,16 @@ io.on('connection', (socket) => {
                         });
 
 
+
+                        console.log('image_number='+image_number);
                         new_joinedRoom = '<div class="chat_list">\n' +
                             '                        <div class="chat_people">\n' +
-                            '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                            '                            <div class="chat_img"><img id="room_image" src="/'+image_number+'" style="border-radius:100px; width: 30px; height: 30px"> </div>\n' +
                             '                            <div class="chat_ib">\n' +
                             '                                <h5 id="room_name">'+room_name+'<span class="chat_date"></span></h5>\n' +
                             '                                <p id="description">'+room_description+'</p>\n' +
                             '                            </div>\n' +
-                            '                            <input type="hidden" id="room_data" data-room_name="'+room_name+'" data-description="'+room_description+'" data-room_db_id="'+room_db_id+'">\n'+
+                            '                            <input type="hidden" id="room_data" data-room_name="'+room_name+'" data-description="'+room_description+'" data-room_db_id="'+room_db_id+'"  data-room_image="'+image_number+'">\n'+
                             '                        </div>\n' +
                             '                    </div>';
 
@@ -732,6 +742,12 @@ function getTime(){
     return time;
 }
 
+
+//1~n까지 수 중에서 랜덤 숫자를 반환
+function getRandomNumber(maxNum){
+    var result = Math.floor(Math.random() * maxNum) + 1;
+    return result+'.jpg';
+}
 
 
 Date.prototype.format = function (f) {

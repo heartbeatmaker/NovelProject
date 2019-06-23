@@ -9464,7 +9464,7 @@
 	 *  @type string
 	 *  @default Version number
 	 */
-	DataTable.version = "1.10.18";
+	DataTable.version = "18";
 
 	/**
 	 * Private data store, containing all of the settings objects that are

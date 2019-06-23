@@ -285,7 +285,7 @@
 
 
                     <div style="text-align: right">
-                        <button class="new_room_btn" id="list_toggle_btn" type="button" onclick="toggleRoomList()" style="margin-right: 10px"> <i class="fa fa-list" aria-hidden="true"></i> </button>
+                        <button class="new_room_btn" id="list_toggle_btn" type="button" style="margin-right: 10px"> <i class="fa fa-list" aria-hidden="true"></i> </button>
                         <button class="new_room_btn" type="button" onclick="openForm()"> <i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
                     </div>
 
@@ -397,6 +397,7 @@
         <input type="text" id="room_description_join" readonly>
 
         <input type="hidden" id="room_db_id_join">
+        <input type="hidden" id="room_image_join">
 
 <!--        <label for="username"><b>Your name</b></label>-->
 <!--        <input type="text" placeholder="" name="username" id="username" required>-->
@@ -463,12 +464,12 @@
 
                     joined_room += '<div class="chat_list">\n' +
                         '                        <div class="chat_people">\n' +
-                        '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                        '                            <div class="chat_img"> <img id="room_image" src="/'+row.image+'" style="border-radius:100px; width: 30px; height: 30px"> </div>\n' +
                         '                            <div class="chat_ib">\n' +
                         '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date"></span></h5>\n' +
                         '                                <p id="description">'+row.description+'</p>\n' +
                         '                            </div>\n' +
-                        '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'">\n'+
+                        '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'" data-room_image="'+row.image+'">\n'+
                         '                        </div>\n' +
                         '                    </div>';
 
@@ -476,12 +477,12 @@
 
                 existing_room += '<div class="chat_list">\n' +
                     '                        <div class="chat_people">\n' +
-                    '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                    '                            <div class="chat_img"> <img id="room_image" src="/'+row.image+'" style="border-radius:100px; width: 30px; height: 30px"> </div>\n' +
                     '                            <div class="chat_ib">\n' +
                     '                                <h5 id="room_name">'+row.room_name+'<span class="chat_date"></span></h5>\n' +
                     '                                <p id="description">'+row.description+'</p>\n' +
                     '                            </div>\n' +
-                    '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'">\n'+
+                    '                            <input type="hidden" id="room_data" data-room_name="'+row.room_name+'" data-description="'+row.description+'" data-room_db_id="'+row.id+'"  data-room_image="'+row.image+'">\n'+
                     '                        </div>\n' +
                     '                    </div>';
 
@@ -523,6 +524,7 @@
             var room_name_clicked = $(this).find('#room_data').data('room_name');
             var room_description_clicked = $(this).find('#room_data').data('description');
             var room_db_id_clicked = $(this).find('#room_data').data('room_db_id');
+            var room_image_clicked = $(this).find('#room_data').data('room_image');
 
             console.log(room_name_clicked+'/'+room_description_clicked+'/'+room_db_id_clicked);
 
@@ -552,6 +554,7 @@
             $('#room_name_join').val(room_name_clicked);
             $('#room_description_join').val(room_description_clicked);
             $('#room_db_id_join').val(room_db_id_clicked);
+            $('#room_image_join').val(room_image_clicked);
 
         });
 
@@ -564,8 +567,9 @@
             var room_name_join = $('#room_name_join').val();
             var room_description_join = $('#room_description_join').val();
             var room_db_id = $('#room_db_id_join').val();
+            var room_image = $('#room_image_join').val();
 
-            socket.emit('join room', room_db_id, room_name_join, room_description_join);
+            socket.emit('join room', room_db_id, room_name_join, room_description_join, room_image);
             closeJoinForm();
 
             return false; //이건 왜 하는거지?
@@ -615,8 +619,9 @@
 
 
         //내 방이 만들어졌다는 알림을 받음 - 왼쪽 방 목록 업데이트, 채팅창 띄워주기
-        socket.on('my room created', (room_name, room_description, room_db_id, username, user_db_id) => {
+        socket.on('my room created', (room_name, room_description, room_db_id, username, user_db_id, image_number) => {
 
+            console.log('image num = '+image_number);
             console.log('my room created. username='+username+' user_db_id='+user_db_id);
 
             var room_name_received = room_name;
@@ -627,12 +632,12 @@
 
             var new_room = '<div class="chat_list">\n' +
                 '                        <div class="chat_people">\n' +
-                '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
+                '                            <div class="chat_img"> <img id="room_image" src="/'+image_number+'" style="border-radius:100px; width: 30px; height: 30px"> </div>\n' +
                 '                            <div class="chat_ib">\n' +
                 '                                <h5 id="room_name">'+room_name_received+'<span class="chat_date"></span></h5>\n' +
                 '                                <p id="description">'+room_description_received+'</p>\n' +
                 '                            </div>\n' +
-                '                            <input type="hidden" id="room_data" data-room_name="'+room_name_received+'" data-description="'+room_description_received+'" data-room_db_id="'+room_db_id_received+'">\n'+
+                '                            <input type="hidden" id="room_data" data-room_name="'+room_name_received+'" data-description="'+room_description_received+'" data-room_db_id="'+room_db_id_received+'" data-room_image="'+image_number+'">\n'+
                 '                        </div>\n' +
                 '                    </div>';
 
@@ -648,13 +653,13 @@
 
 
         //새로운 방이 만들어졌다는 알림을 받음(다른 사람이 만든 방) - 오른쪽 방 목록에 방 추가
-        socket.on('room created', (room_name, room_description, room_db_id) => {
+        socket.on('room created', (room_name, room_description, room_db_id, image_number) => {
 
 
             var new_room = '<div class="chat_list">\n' +
         '                        <div class="chat_people">\n' +
-        '                            <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>\n' +
-        '                            <div class="chat_ib">\n' +
+        '                            <div class="chat_img">  <img id="room_image" src="/'+image_number+'" style="border-radius:100px; width: 30px; height: 30px"> </div>\n' +
+            '                            <div class="chat_ib">\n' +
         '                                <h5 id="room_name">'+room_name+'<span class="chat_date"></span></h5>\n' +
         '                                <p id="description">'+room_description+'</p>\n' +
         '                            </div>\n' +
