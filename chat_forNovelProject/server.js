@@ -8,7 +8,7 @@ const http = require('http').createServer(app); 연결
 const io = require('socket.io')(http);//이 http를 다시 socket.io에 연결한다
 
 
-//필요한 외부 모듈
+//필요한 외부 모듈blog_post
 const mysql = require('mysql');
 const session = require('express-session');//세션을 쉽게 생성할 수 있게 해줌
 

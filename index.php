@@ -217,7 +217,7 @@ if(isset($_POST['signout_btn'])) {
                 <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=non-fiction">Non-fiction</a>
                 <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=community">Community</a>
 <!--                <a class="p-2 text-muted" href="#">Hot 100</a>-->
-                <a class="p-2 text-muted" style="margin-right: 80px;" href="#">About</a>
+                <a class="p-2 text-muted" style="margin-right: 80px;" href="boards/page_trends.php?board=trends">Trends</a>
             </nav>
         </div>
 
