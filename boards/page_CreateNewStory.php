@@ -16,6 +16,7 @@
 
 
     global $db;
+    accessLog();
 
     $isEditMode='';
     //편집모드인지 확인

@@ -5,7 +5,8 @@ require_once 'log/log.php';
 require_once 'functions.php';
 
 global $db;
-//var_dump($_SESSION);
+accessLog();
+
 
 if(isset($_POST['signout_btn'])) {
 
@@ -18,6 +19,12 @@ if(isset($_POST['signout_btn'])) {
     mysqli_query($db, $query_deleteInfo);
 
     $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+
+    //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+    if($_COOKIE['session_id']){
+        setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+    }
 
     echo "<script>alert(\"Bye! \");</script>";
 }
@@ -216,8 +223,20 @@ if(isset($_POST['signout_btn'])) {
                 <a class="p-2 text-muted" style="margin-left: 80px;" href="boards/mainPage.php?board=fiction">Fiction</a>
                 <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=non-fiction">Non-fiction</a>
                 <a class="p-2 text-muted" href="boards/mainPage_nonFiction.php?board=community">Community</a>
-<!--                <a class="p-2 text-muted" href="#">Hot 100</a>-->
-                <a class="p-2 text-muted" style="margin-right: 80px;" href="boards/page_trends.php?board=trends">Trends</a>
+
+<!--                trend 버튼 if else로 나눈 이유: 오른쪽 마진 때문에-->
+                <?php
+                if(isset($_SESSION['email']) && $_SESSION['email']=='admin@gmail.com'){
+                    echo '
+                        <a class="p-2 text-muted" href="boards/page_trends.php?board=trends">Trend</a>
+                        <a class="p-2 text-muted" style="margin-right: 80px;" href="boards/page_analytics.php">Analytics</a>
+                    ';
+                }else{
+                    echo '
+                        <a class="p-2 text-muted" style="margin-right: 80px;" href="boards/page_trends.php?board=trends">Trend</a>
+                    ';
+                }
+                ?>
             </nav>
         </div>
 

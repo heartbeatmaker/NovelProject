@@ -4,8 +4,24 @@ require_once '../session.php';
 require_once '../log/log.php';
 require_once '../functions.php';
 
+global $db;
+accessLog();
+
 //게시판 이름을 get 방식으로 전달받는다
 $board_name = $_GET['board'];
+
+
+//db에 저장된 베스트셀러 분야를 가져온다
+$sql_genre = "SELECT*FROM novelProject_boardInfo WHERE name='bestseller'";
+
+$result_genre = mysqli_query($db, $sql_genre);
+
+$genre_string='';
+if(mysqli_num_rows($result_genre)==1){
+    $row_genre = mysqli_fetch_array($result_genre);
+    $genre_string = $row_genre['category'];
+}
+
 
 
 
@@ -20,6 +36,11 @@ if(isset($_POST['signout_btn'])) {
     mysqli_query($db, $query_deleteInfo);
 
     $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+    //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+    if($_COOKIE['session_id']){
+        setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+    }
 
     echo "<script>alert(\"Bye! \");</script>";
 }
@@ -100,44 +121,63 @@ if(isset($_POST['signout_btn'])) {
 
     <main role="main" style="margin-top: 30px">
 
-        <section class="jumbotron text-center">
+        <section class="jumbotron text-center bg-light">
             <div class="container">
-                <h1 class="jumbotron-heading">Trends of Published Writings</h1>
-                <p class="lead text-muted">The New York Times Best Sellers: Authoritatively ranked lists of books sold in the United States, sorted by format and genre.</p>
+                <h1 class="jumbotron-heading" style="margin-bottom: 20px">Find out the Trend of Published Writings</h1>
+                <p class="lead text-muted">The New York Times Best Sellers of the Week :</p>
+                <p class="lead text-muted">Authoritatively ranked lists of books sold in the United States, sorted by format and genre.</p>
             </div>
         </section>
 
         <div class="album py-5">
             <div class="container">
 
-                <div class="row">
+                <?php
 
-                    <?php
-                    for($i=0; $i<55; $i++){
+                //string으로 이어서 가져온 장르를 개별로 분할하여 출력한다
+                $genre_array = explode(';', $genre_string);
 
-                        echo '
-                        <div class="col-md-3">
-                            <div class="card mb-4 shadow-sm" >
-                                <img  width="100%" height="225" background="#55595c" color="#eceeef" class="card-img-top" text="Thumbnail"/>
-                                <div class="card-body">
-                                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                for ($i = 0; $i < count($genre_array); $i++) {
+
+                    $genre = $genre_array[$i];
+
+                echo '<h1 style="margin-top: 40px; margin-bottom: 20px">'.$genre.'</h1>
+                      <div class="row">';
+
+                $today = date('w'); //오늘 요일을 숫자로 나타낸다 (월~일 = 1~7)
+
+                    //금주 베스트셀러 목록을 가져온다
+                    //월요일에 크롤링을 하기 때문에, interval을 today(=정수)로 설정하면 월요일~오늘까지의 자료를 가져올 수 있다
+                    $sql_book = "SELECT*FROM novelProject_bestseller WHERE listed_date BETWEEN DATE_SUB(now(), INTERVAL ".$today." DAY) AND NOW()";
+                    $result_book = mysqli_query($db, $sql_book);
+
+                    while($row_book = mysqli_fetch_array($result_book)){
+
+                        if($genre == $row_book['genre']){
+                            echo '
+                            <div class="col-md-4">
+                                <div class="card mb-4 shadow-sm" >
+                                    <img src="'.$row_book['img_src'].'" width="160" height="250" background="#55595c" color="#eceeef" text="Thumbnail"
+                                    style="margin:0px auto; padding-top: 20px"/>
+                                    <div class="card-body">
+                                       <div style="font-size: 18px; font-family: Times New Roman; margin-bottom: 10px;">'.$row_book['title'].'</div>
+                                       <p class="card-text">'.$row_book['author'].'</p>
+                                        <p class="card-text">'.$row_book['description'].'</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+
                                         </div>
-                                        <small class="text-muted">9 mins</small>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        ';
+                           ';
+                        }
                     }
 
-                    ?>
+                echo '</div>';
+
+                } ?>
 
 
-                </div>
             </div>
         </div>
 

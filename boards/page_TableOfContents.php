@@ -5,6 +5,7 @@
     require_once '../functions.php';
 
     global $db;
+    accessLog();
 
     //var_dump($_SESSION);
 
@@ -104,6 +105,11 @@
         mysqli_query($db, $query_deleteInfo);
 
         $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+        //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+        if($_COOKIE['session_id']){
+            setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+        }
 
         echo "<script>alert(\"Bye! \");</script>";
     //    header("location: ../index.php"); //redirect

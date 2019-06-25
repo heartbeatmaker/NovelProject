@@ -4,13 +4,16 @@
     require_once  '/usr/local/apache/security_files/connect.php';
     require_once '../log/log.php';
 
+    global $db;
+    accessLog();
+
 if(isset($_POST['signup_btn'])){
 
     $username = ($_POST['username']);
     $email = ($_POST['email']);
     $password = ($_POST['password']);
 
-    global $db;
+
     $sql = "SELECT*FROM novelProject_userInfo WHERE email='$email'";
     $result = mysqli_query($db, $sql);
 

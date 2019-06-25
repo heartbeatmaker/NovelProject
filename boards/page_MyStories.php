@@ -14,7 +14,8 @@ if(!isset($_SESSION['user'])) {
     <?php
 }
 
-//var_dump($_SESSION);
+    global $db;
+    accessLog();
 
 if(!isset($_GET['page'])){
     $page = 1;
@@ -22,7 +23,6 @@ if(!isset($_GET['page'])){
     $page = $_GET['page'];
 }
 
-global $db;
 
 if(isset($_SESSION['user'])){ //로그인 된 상태라면, 해당 사용자의 story를 db에서 가져온다
 
@@ -59,6 +59,11 @@ if(isset($_POST['signout_btn'])) {
     mysqli_query($db, $query_deleteInfo);
 
     $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+    //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+    if($_COOKIE['session_id']){
+        setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+    }
 
     echo "<script>alert(\"Bye! \");</script>";
 //    header("location: ../index.php"); //redirect

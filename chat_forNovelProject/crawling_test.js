@@ -46,9 +46,10 @@ connection.connect();
 
 
 
-//매주 일요일 10시 10분에 아래의 작업을 실행한다
-var work = schedule.scheduleJob({hour:10, minute:10, dayOfWeek:0}, function(){
+//매주 월요일 10시 10분에 아래의 작업을 실행한다
+var work = schedule.scheduleJob({hour:10, minute:10, dayOfWeek:1}, function(){
 
+// app.get('/crawling', (req, res) => {
 
     let resultArr_src = [];
     let resultArr_title = [];
@@ -60,36 +61,35 @@ var work = schedule.scheduleJob({hour:10, minute:10, dayOfWeek:0}, function(){
 
     //url로 요청을 보낸다. 콜백함수: 이 페이지의 html 코드를 다 가져온다(=body)
     request({url, encoding: null}, function(error, response, body){
-        console.log('page '+page);
 
-        let htmlDoc = iconv.convert(body).toString(); //문자열 인코딩(한글 깨짐 방지)
+        // let htmlDoc = iconv.convert(body).toString(); //문자열 인코딩(한글 깨짐 방지) - 한글 데이터를 수집하지 않기 때문에 사용x
 
-        const $ = cheerio.load(htmlDoc); //jquery 셀렉터를 사용하기 위해서, body값을 cheerio 메소드에 넣는다
+        const $ = cheerio.load(body); //jquery 셀렉터를 사용하기 위해서, body값을 cheerio 메소드에 넣는다
 
         // 이미지 주소
         let imgSrcArr = $('.css-9fprjv'); //셀렉터로 원하는 요소를 찾는다'
-        console.log('page '+page+' result size:'+imgSrcArr.length);
+        console.log('result size:'+imgSrcArr.length);
         for(let i = 0; i < imgSrcArr.length; i++){
             resultArr_src.push($(imgSrcArr[i].children[0]).attr('src')); //원하는 요소를 찾으면, 배열에 넣는다
         }
 
         //책 제목
         let titleArr = $('.css-i1z3c1'); //셀렉터로 원하는 요소를 찾는다'
-        console.log('page '+page+' result size:'+titleArr.length);
+        console.log('result size:'+titleArr.length);
         for(let i = 0; i < titleArr.length; i++){
             resultArr_title.push($(titleArr[i]).text()); //원하는 요소를 찾으면, 배열에 넣는다
         }
 
         // 작가 이름
         let authorArr = $('.css-a0gqxo'); //셀렉터로 원하는 요소를 찾는다'
-        console.log('page '+page+' result size:'+authorArr.length);
+        console.log('result size:'+authorArr.length);
         for(let i = 0; i < authorArr.length; i++){
             resultArr_author.push($(authorArr[i]).text()); //원하는 요소를 찾으면, 배열에 넣는다
         }
 
         //책 설명
         let descArr = $('.css-5yxv3r'); //셀렉터로 원하는 요소를 찾는다'
-        console.log('page '+page+' result size:'+descArr.length);
+        console.log('result size:'+descArr.length);
         for(let i = 0; i < descArr.length; i++){
             resultArr_desc.push($(descArr[i]).text()); //원하는 요소를 찾으면, 배열에 넣는다
         }

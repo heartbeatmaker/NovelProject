@@ -2,8 +2,10 @@
     require_once  '/usr/local/apache/security_files/connect.php';
     require_once '../session.php';
     require_once '../log/log.php';
-
     require_once 'comment_server.php';
+
+    global $db;
+    accessLog();
 
 //    var_dump($_SESSION);
     $board_name = $_GET['board'];
@@ -22,7 +24,7 @@
         $episode_db_id = $_GET['ep_id'];
     }
 
-    global $db;
+
 
 
     //정보 추출
@@ -144,6 +146,28 @@
         //수정 화면으로 이동(GET 방식으로 전달)
         header("location: page_writeNewEpisode.php?id=$story_db_id&ep_id=$episode_db_id&mode=edit");
 
+    }
+
+
+    if(isset($_POST['signout_btn'])) {
+
+        $email = $_SESSION['email'];
+        push_log($email . " sign out");
+
+        //해당 사용자의 db정보를 수정한다
+        global $db;
+        $query_deleteInfo = "UPDATE novelProject_userInfo SET session_id=null WHERE email='$email'";
+        mysqli_query($db, $query_deleteInfo);
+
+        $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+        //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+        if($_COOKIE['session_id']){
+            setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+        }
+
+        echo "<script>alert(\"Bye! \");</script>";
+    //    header("location: ../index.php"); //redirect
     }
 
 ?>

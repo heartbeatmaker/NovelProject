@@ -4,6 +4,9 @@ require_once '../session.php';
 require_once '../log/log.php';
 require_once '../functions.php';
 
+global $db;
+accessLog();
+
 //게시판 이름을 get 방식으로 전달받는다
 $board_name = $_GET['board'];
 
@@ -18,7 +21,6 @@ if($board_name=='non-fiction'){
 $genre ='';
 $sql = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
 
-global $db;
 $result = mysqli_query($db, $sql);
 
 if(mysqli_num_rows($result)==1){
@@ -148,6 +150,11 @@ if(isset($_POST['signout_btn'])) {
     mysqli_query($db, $query_deleteInfo);
 
     $_SESSION = array(); //세션 변수 전체를 초기화한다
+
+    //자동로그인 상태면 -> 세션 아이디가 저장된 쿠키 해제
+    if($_COOKIE['session_id']){
+        setcookie("session_id", "", time(), "/"); //만료시각=지금시각
+    }
 
     echo "<script>alert(\"Bye! \");</script>";
 }

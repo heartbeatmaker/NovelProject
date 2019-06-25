@@ -4,6 +4,9 @@ require_once '../session.php';
 require_once  '/usr/local/apache/security_files/connect.php';
 require_once '../log/log.php';
 
+global $db;
+accessLog();
+
 if(isset($_POST['signin_btn'])){
 
     $email = ($_POST['email']);
@@ -45,11 +48,6 @@ if(isset($_POST['signin_btn'])){
         $sql_update = "UPDATE novelProject_userInfo SET session_id='$session_id' WHERE email='$email'";
         mysqli_query($db, $sql_update);
 
-//            7일간 쿠키를 저장한다
-//            setcookie("user_id_cookie", $email, time()+3600*24*7, "/");
-//            setcookie("user_pw_cookie", $hash, time()+3600*24*7, "/");
-//            push_log("email_cookie=".$email , "login-cookie");
-//            push_log("hash_cookie=".$hash , "login-cookie");
         }
 
         header("location: ../index.php");

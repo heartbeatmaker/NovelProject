@@ -4,6 +4,7 @@
     require_once '../log/log.php';
 
     global $db;
+    accessLog();
 
     //편집 모드인지 확인한다
     $isEditMode='';
