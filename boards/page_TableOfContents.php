@@ -253,7 +253,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                        <img src="../images/1.jpg" style="border-radius: 0 3px 3px 0; width:130px; height:180px; margin: 20px 50px 20px" alt="Card image cap"/>
+                        <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:180px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">
@@ -270,13 +270,14 @@
                     </div>
     
                     <div style="width:30%; float:left">
-                        <button class="btn btn-outline-success" style="margin-top: 30px; padding-left: 20px; padding-right: 30px">+ Add to List</button>
+                        
                     </div>
                </div>
                 ';
             }
             ?>
-
+<!--            책을 북마크하는 버튼임. 바로 위에 비어있는 div에 있었음. 기능을 못 넣어서 뺌-->
+<!--            <button class="btn btn-outline-success" style="margin-top: 30px; padding-left: 20px; padding-right: 30px">+ Add to List</button>-->
 
             <div style="float:left; width:80%; margin-top: 50px">
                 <h4><?php echo $number_of_results?> Parts</h4>

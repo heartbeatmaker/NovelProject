@@ -52,14 +52,24 @@
             break;
         case 'weekly': //주간 사용자 통계
 
-            $today=date("Y-m-d");//이걸 변경해주면 됨
+            $today=date("Y-m-d");
 
             $total='';
+
+            $today_dayOfWeek = date("w")-1; //한 주에서 오늘요일을 구함. 일~토요일 기준이라 -1함
+
+            $Y = date("Y");
+            $m = date("m");
+            $d = date("d");
+
+            $this_week_monday = date("Y-m-d", strtotime($Y."-".$m."-".$d." -".$today_dayOfWeek." day"));
+//            $this_week_end = date("Y-m-d", strtotime($this_week_start." +6 day"));
 
             //일별로 방문자 수를 분류해서, array에 넣는다
             //원래 '방문자' 수를 계산해야됨!!! 지금은 '방문' 수를 통계낸거(똑같은 ip = 나 1명이 100번 방문)
             $dataPoints = array();
-            $day_plus =$today;
+//            $day_start = date("Y-m-d", strtotime("-7 days", strtotime($today)));
+            $day_plus = $this_week_monday;
             for($i = 1; $i<=7 ; $i++){
 
                 $sql_num_visitor = "SELECT count(*) FROM novelProject_accessLog WHERE datetime BETWEEN '".$day_plus." 00:00:00' and '".$day_plus." 23:59:59'";
@@ -70,7 +80,7 @@
                 push_log2($day_plus.'num='.$y);
 
                 $total+=$y;
-                $day_plus = date("Y-m-d", strtotime("+1 day", strtotime($day_plus)));
+                $day_plus = date("Y-m-d", strtotime("+1 days", strtotime($day_plus)));
 
 
                 //dataPoints라는 배열에 array라는 값을 추가한다 - 다차원 배열
@@ -78,22 +88,27 @@
                 array_push($dataPoints, array("x" => $i, "y" => $y));
             }
 
-
             break;
         case 'monthly': //월간 사용자 통계
 
-            $this_month = date("Y-m"); //이번 달을 구한다
-
-            $number_of_days_this_month = date("t");//이번 달의 일 수를 구한다
+            $year=date("Y");
+            $month=date("m");
+            $this_month = date("Y-m");
 
             $today=date("Y-m-d");
+
+            $start = date("Y-m-d", mktime(0, 0, 0, $month , 1, $year)); //이번 달의 시작일
+            $number_of_days_this_month = date("t", strtotime($today));//해당 달의 일 수를 구한다
 
             $total='';
 
             //일별로 방문자 수를 분류해서, array에 넣는다
             //원래 '방문자' 수를 계산해야됨!!! 지금은 '방문' 수를 통계낸거(똑같은 ip = 나 1명이 100번 방문)
             $dataPoints = array();
-            $day_plus =$today;
+//            $day_start = date("Y-m-d", strtotime("-".$number_of_days_this_month." day", strtotime($this_month)));
+            push_log2('day_start='.$start);
+
+            $day_plus = $start;
             for($i = 1; $i<=$number_of_days_this_month ; $i++){
 
                 $sql_num_visitor = "SELECT count(*) FROM novelProject_accessLog WHERE datetime BETWEEN '".$day_plus." 00:00:00' and '".$day_plus." 23:59:59'";
@@ -104,7 +119,7 @@
                 push_log2($day_plus.'num='.$y);
 
                 $total+=$y;
-                $day_plus = date("Y-m-d", strtotime("+1 day", strtotime($day_plus)));
+                $day_plus = date("Y-m-d", strtotime("+1 days", strtotime($day_plus)));
 
 
                 //dataPoints라는 배열에 array라는 값을 추가한다 - 다차원 배열
@@ -128,7 +143,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../../../favicon.ico">
 
-    <title>Dashboard Template for Bootstrap</title>
+    <title>ReadMe Analytics</title>
 
     <!-- Bootstrap core CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
@@ -154,75 +169,32 @@
             <div class="sidebar-sticky">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">
-                            <span data-feather="home"></span>
-                            Dashboard <span class="sr-only">(current)</span>
+                        <a class="nav-link" href="#">
+                            <span data-feather="users"></span>
+                            Visitors
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
                             <span data-feather="file"></span>
-                            Orders
+                            Popular Pages
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
-                            <span data-feather="shopping-cart"></span>
-                            Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="users"></span>
-                            Customers
+                            <span data-feather="search"></span>
+                            Search History
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
                             <span data-feather="bar-chart-2"></span>
-                            Reports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="layers"></span>
-                            Integrations
+                            Action Analytics
                         </a>
                     </li>
                 </ul>
 
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Saved reports</span>
-                    <a class="d-flex align-items-center text-muted" href="#">
-                        <span data-feather="plus-circle"></span>
-                    </a>
-                </h6>
-                <ul class="nav flex-column mb-2">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="file-text"></span>
-                            Current month
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="file-text"></span>
-                            Last quarter
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="file-text"></span>
-                            Social engagement
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="file-text"></span>
-                            Year-end sale
-                        </a>
-                    </li>
-                </ul>
+
             </div>
         </nav>
 
@@ -236,14 +208,21 @@
                         <button class="btn btn-sm btn-outline-secondary" onclick="location.href='page_analytics.php?sort=weekly'">Weekly</button>
                         <button class="btn btn-sm btn-outline-secondary" onclick="location.href='page_analytics.php?sort=monthly'">Monthly</button>
                     </div>
-                    <div class='input-group date' id='datetimepicker1'>
-                        <input type='text' class="form-control" />
-                        <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
-                    </div>
                 </div>
+
+<!--                <div class='col-sm-3'>-->
+<!--                    <div class="form-group">-->
+<!--                        <div class='input-group date' id='datetimepicker1'>-->
+<!--                            <input type='text' class="form-control" />-->
+<!--                            <span class="input-group-addon">-->
+<!--                        <span class="glyphicon glyphicon-calendar"></span>-->
+<!--                    </span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
             </div>
+
 
             <div id="chartContainer" style="height: 370px; width: 100%;"></div>
 
@@ -251,27 +230,26 @@
     </div>
 </div>
 
-
-
-<script type="text/javascript">
-    $(function () {
-        $('#datetimepicker1').datetimepicker();
-    });
-</script>
-
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"><\/script>')</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<!-- datetimepicker-->
+<script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"/>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
 
 <!-- Icons -->
 <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
 <script>
     feather.replace()
 </script>
+<!-- Icons -->
+
+
+<!--<script type="text/javascript">-->
+<!---->
+<!--    $(document).ready(function () {-->
+<!--        $('#datetimepicker1').datetimepicker();-->
+<!--    });-->
+<!--</script>-->
+
 
 <!-- Graphs -->
 <script>
@@ -286,7 +264,7 @@
                     if($sort=='daily'){
                         echo $today.' : '.$total.' Visitors';
                     }else if($sort=='weekly'){
-                        echo $today.' ~ '.$day_plus.' : '.$total.' Visitors';
+                        echo $this_week_monday.' ~ '.$day_plus.' : '.$total.' Visitors';
                     }else if($sort=='monthly'){
                         echo $this_month.' : '.$total.' Visitors';
                     }
@@ -301,7 +279,8 @@
 
     }
 </script>
-
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<!-- Graphs -->
+
 </body>
 </html>

@@ -144,9 +144,9 @@ if(isset($_POST['signout_btn'])) {
 <!--                    </div>-->
                 </div>
 
-                <form class="form-inline">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <a class="text-muted" href="#">
+                <form class="form-inline" method="post" action="boards/page_searchResult.php">
+                    <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search">
+                    <a class="text-muted" href="boards/page_searchResult.php">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
                     </a>
                 </form>
