@@ -122,7 +122,7 @@ if(isset($_POST['signout_btn'])) {
     <div class="container">
         <header class="blog-header py-3">
             <div class="row flex-nowrap justify-content-between align-items-center">
-                <div class="col-6">
+                <div class="col-5">
                     <a class="blog-header-logo text-dark" style="font-size: 45px; margin-right:30px; font-family: Times New Roman;" href="#">ReadMe</a>
 <!--                    <div class="btn-group">-->
 <!--                        <button style="background-color: transparent; font-size: 25px" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
@@ -144,12 +144,26 @@ if(isset($_POST['signout_btn'])) {
 <!--                    </div>-->
                 </div>
 
-                <form class="form-inline" method="post" action="boards/page_searchResult.php">
-                    <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search">
-                    <a class="text-muted" href="boards/page_searchResult.php">
+                <div class="form-inline">
+
+<!--                    <div class="btn-group" id="search_limit" style="margin-right: 10px">-->
+<!--                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+<!--                            title <span class="caret"></span>-->
+<!--                        </button>-->
+<!---->
+<!--                        <ul class="dropdown-menu">-->
+<!--                            <li><a class="dropdown-item" href="javascript:void(0)">title</a></li>-->
+<!--                            <li><a class="dropdown-item" href="javascript:void(0)">title+tag</a></li>-->
+<!--                            <li><a class="dropdown-item" href="javascript:void(0)">writer</a></li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+
+
+                    <input class="form-control mr-sm-2" onkeypress="if(event.keyCode==13) {sendGet(); return false;}" id="search_input" type="search" placeholder="Search" aria-label="Search">
+                    <a class="text-muted" href="javascript:void(0);" onclick="sendGet();">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
                     </a>
-                </form>
+                </div>
 
 <!--                채팅-->
                 <?php
@@ -364,22 +378,46 @@ background-image: url('images/book.jpg')">
 
 </body>
 <script>
-    // function signout(){
+
+    //사용자가 선택한 검색 제한 값을 가져온다 - 사용x
+    // var search_limit = 'title';
+    // $("#search_limit a").click(function(e){
+    //     e.preventDefault();
+    //     search_limit = $(this).text();
+    // });
     //
-    //     console.log('signout pressed');
+    // //dropdown 활성화: 선택한 아이템을 버튼 위에 띄워준다
+    // $('#search_limit .dropdown-menu li > a').bind('click', function (e) {
+    //     var html = $(this).html();
+    //     $('#search_limit button.dropdown-toggle').html(html + ' <span class="caret"></span>');
+    // });
+
+    //검색 결과 페이지로 이동
+    function sendGet(){
+        var search_input = $('#search_input').val();
+        location.href="boards/page_searchResult.php?key="+search_input;
+    }
+
+
+    //자바스크립트로 post 보내기 - 사용하지 않음
+    // function sendPost(){
     //
     //     var form = document.createElement("form");
     //     form.setAttribute("method", "post");
-    //     form.setAttribute("action", "index.php");
+    //     form.setAttribute("action", "boards/page_searchResult.php");
+    //     // document.charset = "utf-8"; //꼭 해야 하나?
     //
+    //     var search_input = $('#search_input').val();
     //     //히든으로 값을 주입시킨다.
     //     var hiddenField = document.createElement("input");
     //     hiddenField.setAttribute("type", "hidden");
-    //     hiddenField.setAttribute("value", "signout");
+    //     hiddenField.setAttribute("name", "search"); //post key
+    //     hiddenField.setAttribute("value", search_input);
     //     form.appendChild(hiddenField);
     //
     //     document.body.appendChild(form);
     //     form.submit();
+    //     search_input.val('');
     // }
 </script>
 

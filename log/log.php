@@ -44,6 +44,41 @@ function push_log2($log_str){
 }
 
 
+function push_searchLog($log_str){
+    //일별로 로그 쌓을 것
+
+    global $log_filename;
+
+    $now        = getdate();
+
+    $today      = $now['year']."/".$now['mon']."/".$now['mday'];
+    $now_time   = $now['hours'].":".$now['minutes'].":".$now['seconds'];
+    $now        = $today." ".$now_time;
+    $filep = fopen("/usr/local/apache/htdocs/novel_project/log/log_searchRecord.txt", "a");
+    if(!$filep) {
+        die("can't open log file : ". $log_filename);
+    }
+    fputs($filep, "{$log_str}\n\r");
+    fclose($filep);
+}
+
+
+//검색어 기록 남기기
+function searchLog($keyword){
+
+    global $db;
+
+    //검색한 사람 email
+    $user_email = 'none';
+    if(isset($_SESSION['user'])){
+        $user_email = $_SESSION['email'];
+    }
+    $datetime = date("Y-m-d H:i:s"); //검색 시각
+
+    push_searchLog($user_email.';'.$keyword.';'.$datetime); //파일에 로그쌓기
+}
+
+
 //접속 기록 남기기
 function accessLog(){
 

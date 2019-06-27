@@ -164,15 +164,15 @@ if(isset($_POST['signout_btn'])) {
 //               $author_username=$row['author_username']; //익명인지 확인할 것
                $period=$row['startDate'].'~'.$row['lastUpdate'];
                $number_of_episode=$row['numberOfEpisode'];
-               $isCompleted=$row['isCompleted'];
+               $img_file_name = $row['image'];
+//               $isCompleted=$row['isCompleted'];
 
-               //image 받아야 함
 
-               if($isCompleted=='Y'){
-                   $isCompleted='Completed';
-               }else{
-                   $isCompleted='inProgress';
-               }
+//               if($isCompleted=='Y'){
+//                   $isCompleted='Completed';
+//               }else{
+//                   $isCompleted='inProgress';
+//               }
 
 
                //이 story에 총 몇 개의 like와 comment가 달렸는지 계산한다
@@ -188,15 +188,15 @@ if(isset($_POST['signout_btn'])) {
                }
 
 
-               $randomNumber = generateRandomInt(25);
-               $img_src = $randomNumber.'.jpg';
+//               $randomNumber = generateRandomInt(25);
+//               $img_src = $randomNumber.'.jpg';
 
                 echo
                     '<div class="list_item" style="margin-bottom: 20px" onclick="location.href=\'page_TableOfContents.php?id='.$db_id.'\'">
                         <div class="card flex-md-row box-shadow h-md-250">
                             
                             <div style="width:25%; float:left">
-                                <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                                <img src="upload/'.$img_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                                 
                             </div>
                             
@@ -206,7 +206,7 @@ if(isset($_POST['signout_btn'])) {
                                         <a class="text-dark" >'.$title.'</a>
                                     </h3>
                                     <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
-                                    <div style="margin-top: 10px">'.$number_of_episode.' Part Stories <strong>('.$isCompleted.')</strong></div>
+                                    <div style="margin-top: 10px">'.$number_of_episode.' Part Stories</div>
                                     <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfComments.' comments</div>
                                 </div>
                             </div>

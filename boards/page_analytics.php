@@ -262,11 +262,11 @@
             title: {
                 text: "<?php
                     if($sort=='daily'){
-                        echo $today.' : '.$total.' Visitors';
+                        echo $today.' : '.$total.' Visits';
                     }else if($sort=='weekly'){
-                        echo $this_week_monday.' ~ '.$day_plus.' : '.$total.' Visitors';
+                        echo $this_week_monday.' ~ '.$day_plus.' : '.$total.' Visits';
                     }else if($sort=='monthly'){
-                        echo $this_month.' : '.$total.' Visitors';
+                        echo $this_month.' : '.$total.' Visits';
                     }
                     ?>"
             },

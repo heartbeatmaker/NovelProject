@@ -28,7 +28,8 @@
     $storyGenre='';
     $period='';
     $number_of_episodes='';
-    $isCompleted='';
+    $image_file_name='';
+//    $isCompleted='';
 
     $board_name='';
     //story 정보를 가져온다 - author email, story title
@@ -46,18 +47,18 @@
         $period=$row['startDate'].' ~ '.$row['lastUpdate'];
 
         $board_name='fiction';
+        $image_file_name = $row['image'];
 
 //        정상적으로 일일이 글쓰기하면 여기서 에피소드 개수 세도 됨. 더미데이터 쓸 때는 에피소드 개수 안맞음
 //        $number_of_episodes=$row['numberOfEpisode'];
-        $isCompleted=$row['isCompleted'];
+//        $isCompleted=$row['isCompleted'];
 
-        //image 받아야 함
 
-        if($isCompleted=='Y'){
-            $isCompleted='Completed';
-        }else{
-            $isCompleted='inProgress';
-        }
+//        if($isCompleted=='Y'){
+//            $isCompleted='Completed';
+//        }else{
+//            $isCompleted='inProgress';
+//        }
 
 
         //이 story에 총 몇 개의 like와 bookmark가 달렸는지 계산한다
@@ -212,8 +213,8 @@
 
             <?php
 
-            $randomNumber = generateRandomInt(25);
-            $img_src = $randomNumber.'.jpg';
+//            $randomNumber = generateRandomInt(25);
+//            $img_src = $randomNumber.'.jpg';
 
             //현재 로그인한 사용자와 이 이야기를 쓴 작가가 동일인물인지 확인
             //동일인물이라면, 책 세부내용을 띄워주지 않는다(이미 전 화면에서 확인했으므로)
@@ -222,7 +223,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                        <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                        <img src="upload/'.$image_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">
@@ -253,7 +254,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                        <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:180px; margin: 20px 50px 20px" alt="Card image cap"/>
+                         <img src="upload/'.$image_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">
@@ -264,7 +265,7 @@
                             <div style="margin-top: 10px">by '.$author_username.'</div>
                             <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
     
-                            <div style="margin-top: 10px" class="font-italic; font-weight-bold">'.$number_of_episodes.' Parts ('.$isCompleted.')</div>
+                            <div style="margin-top: 10px" class="font-italic; font-weight-bold">'.$number_of_episodes.' Parts</div>
                             <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfBookmarks.' bookmarks</div>
                         </div>
                     </div>

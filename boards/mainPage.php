@@ -195,12 +195,15 @@
                 <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | <?php echo $board_name?>
             </div>
 
-            <form class="form-inline">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                <a class="text-muted" href="#">
+            <div class="form-inline">
+
+                <input class="form-control mr-sm-2" onkeypress="if(event.keyCode==13) {sendGet(); return false;}" id="search_input" type="search" placeholder="Search" aria-label="Search">
+                <a class="text-muted" href="javascript:void(0);" onclick="sendGet();">
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
                 </a>
-            </form>
+            </div>
+
+
             <div>
                 <div class="btn-group">
                     <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -632,7 +635,7 @@
             </nav>
 
 
-        </div><!-- /.blog-main -->
+        </div>
 
 
 
@@ -652,6 +655,17 @@
 <!--    </footer>-->
 
 </body>
+
+<script>
+
+    //검색 결과 페이지로 이동
+    function sendGet(){
+        var search_input = $('#search_input').val();
+        location.href="page_searchResult.php?key="+search_input;
+    }
+
+</script>
+
 <script>
     $(document).ready(function () {
 

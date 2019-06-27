@@ -32,7 +32,6 @@
 //        echo "user=".$user," / cookie_pw=".$_COOKIE['user_pw_cookie']," / password=".$password," / session_user=".$_SESSION['user'];
 
     } else { //자동로그인 설정 안 했을 경우
-        push_log2('자동로그인x');
 
         session_start();
 

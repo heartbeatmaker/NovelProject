@@ -27,9 +27,10 @@
 
     $story_db_id_inEditMode='';
     $title_retrieved='';
-    $description_retrieved='';    //이미지도 가져와야함
+    $description_retrieved='';
     $genre_retrieved='';
     $author_username_retrieved='';
+    $image_file_name_retrieved='';
     //편집모드: 이 story가 db에 어떤 id로 저장되어 있는지, get방식으로 값을 전달받는다
     if(isset($_GET['id'])){
         $story_db_id_inEditMode=$_GET['id'];
@@ -42,6 +43,7 @@
         $description_retrieved = $row_retrieveSavedContent['description'];
         $genre_retrieved = $row_retrieveSavedContent['genre'];
         $author_username_retrieved = $row_retrieveSavedContent['author_username'];
+        $image_file_name_retrieved = $row_retrieveSavedContent['image'];
     }
 
 
@@ -76,6 +78,7 @@
         }
         $isCompleted = 'N';
         $date = date("Y/m/d");
+        $image_file_name = $_SESSION['book_cover'];//북커버 이미지는 같은 폴더의 upload 폴더에 저장된다
 
         push_log('title='.$title);
 //        push_log('description='.$description);
@@ -89,7 +92,7 @@
 
             //story db 수정
             $sql_storyInfo = "UPDATE novelProject_storyInfo 
-SET lastUpdate='$date', title='$title', description='$description', genre='$genre', author_username='$author_username' 
+SET lastUpdate='$date', title='$title', description='$description', genre='$genre', author_username='$author_username', image='$image_file_name' 
 WHERE id='$story_db_id_inEditMode'";
 
             $result_storyDB_edit = mysqli_query($db, $sql_storyInfo) or die(mysqli_error($db));
@@ -107,8 +110,8 @@ WHERE id='$story_db_id_inEditMode'";
         }else{ //최초작성 시 - db에 저장
 
             $sql_storyInfo = "INSERT INTO novelProject_storyInfo(title, description, genre, author_email, author_username, 
-isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$description','$genre','$author_email'
-,'$author_username','$isCompleted','$date','$date', 0)";
+isCompleted, startDate, lastUpdate, numberOfEpisode, image)VALUES('$title','$description','$genre','$author_email'
+,'$author_username','$isCompleted','$date','$date', 0, '$image_file_name')";
 
 
             $result = mysqli_query($db, $sql_storyInfo);
@@ -142,9 +145,8 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>-->
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"/>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous" type="text/javascript"></script>
+<!--    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous" type="text/javascript"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
@@ -173,12 +175,25 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 
 <!--        북커버 삽입-->
         <aside class="col-md-3 blog-sidebar">
-            <div style="text-align: center">
-                <img src="../images/bookCover_dummy/1.jpg" height="300" width="200" style="margin-bottom: 20px"/>
-                <button class="btn btn-outline-secondary my-2 my-sm-0" id="insert_image">Add a Cover</button>
+            <div id="cover_div" style="text-align: center">
+                <?php
+                if($isEditMode){
+                    echo '
+                    <img src="upload/'.$image_file_name_retrieved.'" height="300" width="200" style="margin-bottom: 20px"/>
+                    ';
+                }else{
+                    echo '
+                    <img id="dummy_image" src="../images/bookCover_dummy/1.jpg" height="300" width="200" style="margin-bottom: 20px"/>
+                    ';
+                }
+
+                ?>
                 <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="change_image">Change</button>-->
                 <!--            <button class="btn btn-outline-secondary my-2 my-sm-0" id="remove_image">Remove</button>-->
             </div>
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modal_add_image">
+                Add a Book Cover
+            </button>
         </aside><!-- /.blog-sidebar -->
 
 <!--        공간띄우기용-->
@@ -279,27 +294,30 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
 </html>
 
 
-<div id="imageModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add a Cover</h4>
-        </div>
-        <div class="modal-body">
+<div class="modal fade" id="modal_add_image" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add an Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <form id="image_form" method="post" enctype="multipart/form-data">
-                <p><label>Select Image</label>
-                    <input type="file" name="image" id="image"/>
-                </p><br />
-                <input type="hidden" name="action" id="action" value="insert"/>
-                <input type="hidden" name="image_id" id="image_id"/>
-                <input type="submit" name="insert" id="insert" value="insert" class="btn btn-info"/>
+                <div class="modal-body">
+                    <div>
+                        <input type="file" name="image" id="image"/>
+                    </div>
+                    <input type="hidden" name="action" id="action" value="insert"/>
+<!--                    <input type="hidden" name="image_id" id="image_id"/>-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" name="insert" class="btn btn-primary">Save changes</button>
+                </div>
             </form>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
     </div>
-
 </div>
 
 <script>
@@ -308,36 +326,27 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
         //db에 저장되어 있는 모든 이미지를 표에 넣어서 화면에 출력한다
         // fetch_data();
         //
-        // function fetch_data(){
-        //     var action = "fetch";
-        //     $.ajax({
-        //         url:"action.php",
-        //         method:"post",
-        //         data:{action:action},
-        //         success:function(data){ //data= 완성된 표
-        //             $('#image_data').html(data);
-        //             //html(data): image_data 요소 안에 내용(=data)을 넣는다
-        //         }
-        //     })
-        // }
+        function fetch_data(){
+            var action = "fetch";
+            $.ajax({
+                url:"coverImage_server.php",
+                method:"post",
+                data:{action:action},
+                success:function(image){ //data= 완성된 이미지
+                    // $('#dummy_image').hide();
+                    $('#cover_div').empty(); //이 요소의 자식요소를 전부 삭제 - 기존에 저장된 이미지를 지운다
+                    $('#cover_div').prepend(image);
+                    // $('#image_data').html(data);
+                    //html(data): image_data 요소 안에 내용(=data)을 넣는다
+                }
+            })
+        }
 
         //추가 버튼을 누르면 - 모달 창을 띄워준다
         //모달 - 팝업 차이: 모달은 페이지 안에 존재하는 하나의 레이어. 사용자가 block할 수 없음
         //팝업은 별도의 창을 띄우는 것. 현재 브라우저 창에 상관없이 제어가 가능
         //브라우저 옵션을 통해 열지 않도록 강제할 수 있음
-        $('#insert_image').click(function(){
-            $('#imageModal').modal('show');
-            $('#image_form')[0].reset(); //reset(): form 양식 안의 모든 요소를 초기화하는 js 메소드
-            $('.modal-title').text("Add an Image");
-
-            //각 양식에 값을 넣는다
-            $('#image_id').val('');
-            $('#action').val('insert');
-            $('#insert').val('insert');
-        });
-
-
-        $('#image_form').submit(function(event){ //js에서는 id를 사용하여 form 객체를 가져오는 것이 가능하다
+        $('#modal_add_image').submit(function(event){ //js에서는 id를 사용하여 form 객체를 가져오는 것이 가능하다
 
             //클릭이벤트 외에 별도의 브라우저 행동을 막기 위해 사용 ex) 스크롤이 위로 올라가는 것을 막음
             event.preventDefault();
@@ -368,61 +377,27 @@ isCompleted, startDate, lastUpdate, numberOfEpisode)VALUES('$title','$descriptio
                 }
                 //유효한 확장자라면, 서버에 요청한다
                 else{
+
+                    var form = $('form')[1];
+                    var formData = new FormData(form);
+
                     $.ajax({
-                        url:"action.php",
-                        method: "POST",
+                        url:"coverImage_server.php",
+                        type: "POST",
                         //formData: 파일을 전송할 때, 직접 폼 형태(key/value)로 보낼 수 있게 해주는 객체
-                        data: new FormData(this), //formData 객체에 image_form 의 값을 넣어준다
+                        data: formData, //formData 객체에 image_form 의 값을 넣어준다
                         //formData로 파일을 전송할 때, contentType과 processData는 아래와 같이 설정해준다
                         contentType:false,
                         processData:false,
                         success:function(data){
-                            alert(data); //이건 왜하지?
-                            fetch_data(); //이미지를 포함한 새로운 행을 화면에 표시한다
-                            $('#image_form')[0].reset();
-                            $('#imageModal').modal('hide');
+                            fetch_data(data); //이미지를 포함한 새로운 행을 화면에 표시한다
+                            $('#modal_add_image').modal('hide');
                         }
                     });
                 }
             }
         });
 
-        //이미지 변경 버튼을 눌렀을 때
-        $(document).on('click', '.update', function(){
 
-            //각종 속성 변경
-            //image_id key에 해당 이미지의 id를 값으로 넣어준다. db에서 찾아야 하므로. 원래는 값이 비어있음
-            $('#image_id').val($(this).attr("id"));
-            $('#action').val("update");
-            $('.modal-title').text("Update Image");
-            $('#insert').val("Update");
-            $('#imageModal').modal("show");
-
-            //db에서 이미지 이름만 바꿨는데 왜 화면이 업데이트되지???
-            //fetch_data() 해야되는거 아님?
-        });
-
-        //이미지 삭제 버튼을 눌렀을 때
-        $(document).on('click', '.delete', function() {
-
-            //각종 속성 변경
-            //image_id key에 해당 이미지의 id를 값으로 넣어준다. db에서 찾아야 하므로
-            var image_id = $(this).attr("id");
-            var action = "delete";
-            if(confirm("Want to remove this image?")){
-                $.ajax({
-                    url:"action.php",
-                    method:"POST",
-                    data:{image_id:image_id, action:action},
-                    success:function(data){
-                        alert(data);
-                        fetch_data(); //화면의 표를 새로고침한다
-                    }
-                })
-            }
-            else{
-                return false;
-            }
-        })
     });
 </script>
