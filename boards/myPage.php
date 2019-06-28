@@ -1,4 +1,7 @@
 <?php
+//사용자가 북마크한 게시물을 모아서 보여주는 페이지
+//Library 버튼을 클릭하면 들어오는 페이지
+
     require_once  '/usr/local/apache/security_files/connect.php';
     require_once '../session.php';
     require_once '../log/log.php';
@@ -25,6 +28,37 @@
     }
 
 
+    //분류를 위해 각 게시판의 이름을 가져온다
+    $sql_board_name = "SELECT name FROM novelProject_boardInfo";
+    $result_board_name = mysqli_query($db, $sql_board_name);
+
+    $board_name='';
+    if(isset($_GET['tag'])){
+        $board_name = $_GET['tag'];
+    }else{
+        $board_name = 'fiction';
+    }
+
+
+    $sql_tableName = '';
+    $column_name_bookmark='bookmarkHistory';
+
+    if($board_name=='fiction'){
+        $sql_tableName = 'novelProject_episodeInfo';
+        $column_name_bookmark .= '_fiction';
+
+    }else if($board_name=='non-fiction'){
+        $sql_tableName = 'novelProject_nonfiction';
+        $column_name_bookmark .= '_nonfiction';
+
+    }else if($board_name=='community'){
+        $sql_tableName = 'novelProject_community';
+        $column_name_bookmark .= '_community';
+    }
+
+
+
+
     $currentUser_email = $_SESSION['email'];
 
     //현재 사용자의 북마크 목록을 가져온다
@@ -34,14 +68,16 @@
     $bookmarkList='';
     if(mysqli_num_rows($result_userInfo) == 1){
         $row_userInfo = mysqli_fetch_array($result_userInfo);
-        $bookmarkList = $row_userInfo['bookmarkHistory'];
+        $bookmarkList = $row_userInfo[$column_name_bookmark];
     }
 
     $result_count=''; //북마크 개수
 
     $bookmarkList_split_original = explode(';', $bookmarkList);
     $bookmarkList_split = array_reverse($bookmarkList_split_original); //최신순으로 정렬하려고 배열 뒤집음
-    $result_count = count($bookmarkList_split);
+    $bookmarkList_filtered = array_filter($bookmarkList_split); //공백인 요소를 제거한다(제거 안 하면 아무것도 없어도 count가 1이 나옴)
+    $result_count = count($bookmarkList_filtered);
+    push_log('북마크 개수='.$result_count);
 
     $results_per_page = 10;//한 페이지당 10개로 제한
     $number_of_pages = ceil($result_count/$results_per_page);
@@ -124,6 +160,17 @@
             <!--                <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='mainPage.php'">Cancel</button>-->
             <!--            </div>-->
             <div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Write
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
+                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
+                    </div>
+                </div>
+
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -151,20 +198,65 @@
 
 <main role="main" class="container" style="width:80% ;margin-top: 50px; margin-bottom: 100px">
 
+
+    <div class="jumbotron p-3 text-white rounded bg-secondary" style="margin-top: 40px; margin-bottom: 30px;">
+
+        <div>Refine by Board
+            <?php
+
+            //게시판별 분류
+            //각 게시판의 이름을 버튼형식으로 나열한다
+            while($row_board_name = mysqli_fetch_array($result_board_name)){
+
+                if($row_board_name[0] != 'bestseller'){
+
+                    //이미 선택된 버튼의 색을 active로 바꿔준다
+                    if($row_board_name[0]==$board_name){
+                        echo '<button class="btn btn-outline-warning active" style="margin:10px">'.$row_board_name[0].'</button>';
+
+                    }else{
+                        echo '<button class="btn btn-outline-warning" style="margin:10px"
+                   onclick="location.href=\'myPage.php?tag='.$row_board_name[0].'\'">'.$row_board_name[0].'</button>';
+                    }
+
+
+                }
+
+            }
+            ?>
+        </div>
+    </div>
+
     <div class="row">
 
         <div class="col-md-10" style="margin:0px auto">
 
             <div style="float:left; width:80%; margin-top: 50px">
-                <h4><?php echo $result_count?> Bookmarks</h4>
+                <h4><?php
+                        if($result_count > 1){
+                            echo $result_count.' Bookmarks';
+                        }else{
+                            echo $result_count.' Bookmark';
+                        }
+                    ?></h4>
             </div>
 
             <table class="table table-hover">
                 <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Story</th>
-                    <th scope="col">Episode</th>
+                    <th scope="col">Board</th>
+                    <?php
+                    if($board_name=='fiction'){
+                        echo '<th scope="col">StoryTitle</th>
+                              <th scope="col">Episode</th>
+                             ';
+                    }else{
+                        echo '
+                              <th scope="col">Title</th>
+                             ';
+                    }
+                    ?>
                     <th scope="col">Author</th>
                 </tr>
                 </thead>
@@ -176,34 +268,57 @@
 
                     $index = $result_count - ($page - 1) * $results_per_page - $k;
 
-                    $episode_db_id = $bookmarkList_split[$i];
+                    $episode_db_id = $bookmarkList_filtered[$i];
 
                     //각 episode의 정보를 가져온다
-                    $sql_episodeInfo = "SELECT*FROM novelProject_episodeInfo WHERE id ='$episode_db_id'";
+                    $sql_episodeInfo = "SELECT*FROM ".$sql_tableName." WHERE id ='$episode_db_id'";
                     $result = mysqli_query($db, $sql_episodeInfo);
 
                     if(mysqli_num_rows($result) == 1){
                         $row = mysqli_fetch_array($result);
 
-                        $author_username=$row['author_username'];
-                        $storyTitle =$row['storyTitle'];
-                        $episodeTitle = $row['title'];
+                        if($board_name == 'fiction'){
 
-                        echo '
-                     <tr onclick="location.href=\'read_post.php?board=fiction&ep_id='.$episode_db_id.'\'">
-                        <th scope="row">' . $index . '</th>
-                        <td>' . $storyTitle . '</td>
-                        <td>' . $episodeTitle . '</td>
-                        <td>' . $author_username . '</td>
-                     </tr>
-                    ';
+                            $author_username=$row['author_username'];
+                            $storyTitle =$row['storyTitle'];
+                            $episodeTitle = $row['title'];
+
+                            echo '
+                        
+                                 <tr onclick="location.href=\'read_post.php?board=fiction&ep_id='.$episode_db_id.'\'">
+                                    <th scope="row">' . $index . '</th>
+                                    <td>' . $board_name . '</td>
+                                    <td>' . $storyTitle . '</td>
+                                    <td>' . $episodeTitle . '</td>
+                                    <td>' . $author_username . '</td>
+                                 </tr>
+                         
+                             ';
+
+                        }else{
+                            $author_username=$row['author_username'];
+                            $title = $row['title'];
+
+                            echo '
+                           
+                            <tbody>
+                                 <tr onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'">
+                                    <th scope="row">' . $index . '</th>
+                                    <td>' . $board_name . '</td>
+                                    <td>' . $title . '</td>
+                                    <td>' . $author_username . '</td>
+                                 </tr>
+                          
+                             ';
+
+
+                        }
                     }
 
                     $k++;
                 }
 
                 ?>
-
                 </tbody>
             </table>
 
@@ -222,41 +337,41 @@
                             if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="myPage.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
                         //마지막 페이지로 가는 버튼
-                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="myPage.php?page='.$number_of_pages.'">Last</a></li>';
+                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                     }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                         //첫 페이지로 가는 버튼
-                        echo '<li class="page-item"><a class="page-link" href="myPage.php?page=1">First</a></li><li class="page-item">. . .</li>';
+                        echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                         // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                         for ($i=$page-2; $i<=$page+2; $i++){
                             if($i==$page){
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="myPage.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
                         //마지막 페이지로 가는 버튼
-                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="myPage.php?page='.$number_of_pages.'">Last</a></li>';
+                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                     }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                         //첫 페이지로 가는 버튼
-                        echo '<li class="page-item"><a class="page-link" href="myPage.php?page=1">First</a></li><li class="page-item">. . .</li>';
+                        echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                         //마지막에서 5개 페이지를 보여준다
                         for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                             if($i==$page){
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="myPage.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
@@ -267,7 +382,7 @@
                         if($i==$page){
                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                         }else{
-                            echo '<li class="page-item"><a class="page-link" href="myPage.php?page=' . $i . '">'. $i .'</a></li>';
+                            echo '<li class="page-item"><a class="page-link" href="myPage.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                         }
                     }
                 }

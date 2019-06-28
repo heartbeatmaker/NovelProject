@@ -67,7 +67,7 @@ if(isset($_GET['tag'])){
         $result = mysqli_query($db, $sql);
 
 
-    }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때
+    }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때 - 일단 최신순으로 정렬
 
         //db에서 글을 가져온다
         $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
@@ -81,7 +81,7 @@ if(isset($_GET['tag'])){
 
 
         //10개씩만 가져온다
-        $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' LIMIT ".$start_from .",".$results_per_page;
+        $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
         $result = mysqli_query($db, $sql);
 
 
@@ -116,7 +116,7 @@ if(isset($_GET['tag'])){
         //10개씩만 가져온다
         $result = mysqli_query($db, $sql);
 
-    }else{ //아무 분류를 하지 않았을 때
+    }else{ //아무 분류를 하지 않았을 때 - 최신순으로 정렬
 
         //db에서 글을 가져온다
         $sql_episode_only = "SELECT*FROM ".$sql_tableName;
@@ -130,7 +130,7 @@ if(isset($_GET['tag'])){
 
 
         //10개씩만 가져온다
-        $sql = "SELECT*FROM ".$sql_tableName." LIMIT ".$start_from .",".$results_per_page;
+        $sql = "SELECT*FROM ".$sql_tableName." ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
         $result = mysqli_query($db, $sql);
 
     }
@@ -203,13 +203,9 @@ if(isset($_POST['signout_btn'])) {
 
             <div>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Write
+                    <button type="button" class="btn btn-success" onclick="location.href='page_writeNewPost.php?board=<?php echo $board_name?>'">
+                        New Post
                     </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                    </div>
                 </div>
                 <?php
                 if(isset($_SESSION['email'])){
@@ -238,7 +234,7 @@ if(isset($_POST['signout_btn'])) {
 <main role="main" class="container">
 
     <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 40px; margin-bottom: 30px;">
-        <p>Refine by tag</p>
+        <p>Refine by genre</p>
         <button class="btn btn-outline-success" style="margin:10px"
                 onclick="location.href='mainPage_nonFiction.php?board=<?php echo $board_name?>'">All</button>
         <?php
@@ -306,7 +302,7 @@ if(isset($_POST['signout_btn'])) {
                 $author_username=$row['author_username'];
                 $genre = $row['genre'];
                 $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
-                //image 받아야함
+                $image_name = $row['image'];
                 $date=$row['date'];
                 $numberOfLikes = $row['numberOfLikes'];
                 $numberOfComments = $row['numberOfComments'];
@@ -320,13 +316,19 @@ if(isset($_POST['signout_btn'])) {
                 }
 
 
-                $randomNumber = generateRandomInt(30);
-                $img_src = 'dummy ('.$randomNumber.').jpg';
+                $image_path = '../images/ck_uploads/'.$image_name;
+                if($image_name == 'default' || $image_name == null || $image_name == ''){
+                    $randomNumber = generateRandomInt(30);
+                    $img_src = 'dummy ('.$randomNumber.').jpg';
+
+                    $image_path = '../images/bookCover_dummy/'.$img_src;
+                }
+
 
                 echo
                     '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
+                            <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
@@ -335,8 +337,8 @@ if(isset($_POST['signout_btn'])) {
                                 <div class="mb-1 text-muted">by '.$author_username.'</div>
                                 <p class="card-text mb-auto">'.$description.'</p>
                                 <div style="margin-top: 10px; width:100%;">
-                                    <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
-                                    <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
+                                    <div style="float:left; width:75%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
+                                    <div class="text-muted" style="float:left; width:25%">'.$date_modified.'</div>
                                 </div>
                             </div>
              

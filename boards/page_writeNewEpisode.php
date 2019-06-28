@@ -1,4 +1,7 @@
 <?php
+//소설의 새로운 챕터를 쓰는 부분
+//소설 id를 받아와야 함
+
     require_once  '/usr/local/apache/security_files/connect.php';
     require_once '../session.php';
     require_once '../log/log.php';

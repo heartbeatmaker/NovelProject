@@ -8,34 +8,46 @@
     global $db;
 
     $episode_db_id = $_GET['ep_id']; //read_post.php 파일에서 get방식으로 받은 값이 여기에도 전달됨
+    $board_name = $_GET['board'];
     push_log("comment) GET['ep_id']=".$episode_db_id);
+    push_log("comment) GET['board']=".$board_name);
 
 
     //댓글 최초작성 시
     //클라이언트로부터 받은 요청을 처리하는 코드이다
     //save, comment: (jquery ajax 를 통해) 서버에 요청하여 얻은 값. script.js 참고
     if(isset($_POST['save'])){
-        push_log("comment) ajax로 받은 요청을 처리하는 곳");
+
 
         //현재 로그인 상태인 사용자의 이름과 이메일
         $name = $_SESSION['user'];
         $email = $_SESSION['email'];
-        push_log("comment) writer_username=".$name." writer_email=".$email);
 
         $comment = $_POST['comment']; //사용자가 작성한 댓글 내용
         $date = date('Y-m-d H:i:s'); //현재시각
         $episode_db_id = $_POST['episode_db_id']; //댓글이 속한 글의 id -- 나중에 대댓 기능 만들 때, 수정삭제 부분에 post_id 추가할 것
-
-        push_log("comment) comment= ".$comment);
-        push_log("comment) date= ".$date);
-        push_log("comment) episode_db_id= ".$episode_db_id);
+        $board_name = $_POST['board_name'];
 
 
-        //episode db에 댓글 수를 추가한다
-        $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= numberOfComments + 1 WHERE id='$episode_db_id'";
+        $sql_tableName = '';
 
-        //받은 값을 댓글 db에 저장한다
-        $query_comment = "INSERT INTO novelProject_comment (writer_username, writer_email, content, date, episode_db_id) VALUES ('$name', '$email', '$comment', '$date', '$episode_db_id')";
+        if($board_name=='fiction'){
+            $sql_tableName = 'novelProject_episodeInfo';
+
+        }else if($board_name=='non-fiction'){
+            $sql_tableName = 'novelProject_nonfiction';
+
+        }else if($board_name=='community'){
+            $sql_tableName = 'novelProject_community';
+        }
+
+
+
+        //해당 글이 속한 db에 댓글 수를 추가한다
+        $query_episodeInfo = "UPDATE ".$sql_tableName." SET numberOfComments= numberOfComments + 1 WHERE id='$episode_db_id'";
+
+        //받은 값을 댓글 db에 저장한다 - 해당 글이 속한 게시판 이름도 저장
+        $query_comment = "INSERT INTO novelProject_comment (writer_username, writer_email, content, date, episode_db_id, board_name) VALUES ('$name', '$email', '$comment', '$date', '$episode_db_id', '$board_name')";
 
 
         $result_episodeDB = mysqli_query($db, $query_episodeInfo);
@@ -161,6 +173,19 @@
         $result = mysqli_query($db, $query);
         $row = mysqli_fetch_array($result);
         $episode_db_id = $row['episode_db_id'];
+        $board_name = $row['board_name'];
+
+        $sql_tableName = '';
+
+        if($board_name=='fiction'){
+            $sql_tableName = 'novelProject_episodeInfo';
+
+        }else if($board_name=='non-fiction'){
+            $sql_tableName = 'novelProject_nonfiction';
+
+        }else if($board_name=='community'){
+            $sql_tableName = 'novelProject_community';
+        }
 
         $currentUser_email = $_SESSION['email'];
 
@@ -169,7 +194,7 @@
         if($comment_writer_email==$currentUser_email){
 
             $query = "DELETE FROM novelProject_comment WHERE id=".$comment_db_id;
-            $query_episodeInfo = "UPDATE novelProject_episodeInfo SET numberOfComments= numberOfComments - 1 WHERE id='$episode_db_id'";
+            $query_episodeInfo = "UPDATE ".$sql_tableName." SET numberOfComments= numberOfComments - 1 WHERE id='$episode_db_id'";
             mysqli_query($db, $query);
             mysqli_query($db, $query_episodeInfo);
 
@@ -182,11 +207,6 @@
         }
 
 
-        push_log('comment_db_id='.$comment_db_id);
-        push_log('comment_writer_email'.$comment_writer_email);
-        push_log('currentUser_email='.$currentUser_email);
-        push_log('delete_result='.$delete_result);
-
         echo $delete_result;
         exit();
     }
@@ -194,8 +214,10 @@
     //전체 댓글을 화면에 표시해주는 부분
     //db에서 상위 댓글 정보를 날짜 순으로 모두 가져온다
     global $episode_db_id;
+    global $board_name;
 
-    $query = "SELECT*FROM novelProject_comment WHERE episode_db_id =".$episode_db_id; //각 글의 id에 해당하는 댓글만 고른다
+
+    $query = "SELECT*FROM novelProject_comment WHERE board_name ='$board_name' AND episode_db_id =".$episode_db_id; //각 글의 id에 해당하는 댓글만 고른다
     $result = mysqli_query($db, $query);
 
     $num = mysqli_num_rows($result);

@@ -10,13 +10,25 @@
 //    var_dump($_SESSION);
     $board_name = $_GET['board'];
 
+    $column_name_like='likeHistory';
+    $column_name_bookmark='bookmarkHistory';
+
     if($board_name=='fiction'){
         $sql_tableName = 'novelProject_episodeInfo';
+        $column_name_like .= '_fiction';
+        $column_name_bookmark .= '_fiction';
+
     }else if($board_name=='non-fiction'){
         $sql_tableName = 'novelProject_nonfiction';
+        $column_name_like .= '_nonfiction';
+        $column_name_bookmark .= '_nonfiction';
+
     }else if($board_name=='community'){
         $sql_tableName = 'novelProject_community';
+        $column_name_like .= '_community';
+        $column_name_bookmark .= '_community';
     }
+
 
     //이 episode가 db에 어떤 id값으로 저장되어 있는지 get방식으로 받아온다
     $episode_db_id='';
@@ -39,6 +51,8 @@
     $author_email='';
     $publishedTime='';
     $story_db_id='';
+    $numberOfLikes='';
+    $numberOfBookmarks='';
 
     if(mysqli_num_rows($result)==1){
         $row = mysqli_fetch_array($result);
@@ -50,6 +64,8 @@
         $author_email=$row['author_email'];
         $publishedTime =$row['date'];
         $story_db_id=$row['story_db_id'];
+        $numberOfLikes=$row['numberOfLikes'];
+        $numberOfBookmarks=$row['bookmark'];
 
         //조회수 +1 저장
         $query_episodeInfo = "UPDATE ".$sql_tableName." SET numberOfViews= numberOfViews + 1 WHERE id='$episode_db_id'";
@@ -71,8 +87,8 @@
         $currentBookmark='';
         if(mysqli_num_rows($result_userInfo) == 1){
             $row_userInfo = mysqli_fetch_array($result_userInfo);
-            $currentLikeHistory = $row_userInfo['likeHistory'];
-            $currentBookmark = $row_userInfo['bookmarkHistory'];
+            $currentLikeHistory = $row_userInfo[$column_name_like];
+            $currentBookmark = $row_userInfo[$column_name_bookmark];
         }
         push_log('읽기화면) 사용자의 좋아요, 북마크 목록을 가져온다');
         push_log('읽기화면) 최초 currentLikeHistory='.$currentLikeHistory.' // currentBookmark='.$currentBookmark);
@@ -144,7 +160,11 @@
     if(isset($_POST['post_edit_btn'])){
 
         //수정 화면으로 이동(GET 방식으로 전달)
-        header("location: page_writeNewEpisode.php?id=$story_db_id&ep_id=$episode_db_id&mode=edit");
+        if($board_name == 'fiction'){
+            header("location: page_writeNewEpisode.php?id=$story_db_id&ep_id=$episode_db_id&mode=edit");
+        }else{
+            header("location: page_writeNewPost.php?board=$board_name&id=$episode_db_id&mode=edit");
+        }
 
     }
 
@@ -169,6 +189,13 @@
         echo "<script>alert(\"Bye! \");</script>";
     //    header("location: ../index.php"); //redirect
     }
+
+
+    //공유기능에 필요한 부분
+    //현재 url
+    $http_host = $_SERVER['HTTP_HOST'];
+    $request_uri = $_SERVER['REQUEST_URI'];
+    $current_page_url = 'http://' . $http_host . $request_uri;
 
 ?>
 
@@ -215,30 +242,43 @@
                         | '.$storyTitle.'</a> by '.$author_username;
                     }else{
                         echo '
-                        <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial">
+                        <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="mainPage_nonFiction.php?board='.$board_name.'">
                         | '.$board_name.'</a>
                         ';
                     }
                     ?>
                 </div>
-                <?php
-                if(isset($_SESSION['email'])){
-                    echo '
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                '.$_SESSION['user'].'
-                            </button>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="myPage.php">Library</a>
-                                <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
-                            </div>
+
+                <div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Write
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
+                            <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                         </div>
-                        ';
-                }else{
-                    echo '<button class="btn btn-outline-secondary" onclick="location.href=\'../login/login.php\'" style="margin-right: 20px">Sign-in</button>';
-                }
-                ?>
-               </div>
+                    </div>
+
+                    <?php
+                    if(isset($_SESSION['email'])){
+                        echo '
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    '.$_SESSION['user'].'
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="myPage.php">Library</a>
+                                    <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
+                                </div>
+                            </div>
+                            ';
+                    }else{
+                        echo '<button class="btn btn-outline-secondary" onclick="location.href=\'../login/login.php\'" style="margin-right: 20px">Sign-in</button>';
+                    }
+                    ?>
+                </div>
+            </div>
         </header>
 
     </div>
@@ -294,36 +334,39 @@
 
 
             <nav class="nav d-flex justify-content-center" style="margin:0px auto; width:90%;">
-                    <?php
+                <input type="hidden" id="board_name" value="<?php echo $board_name?>">
+
+                <?php
                     if($isAlreadyLiked==true){
                         echo '<button type="button" class="btn-like liked" id="like" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
-                                <i class="fa fa-heart"></i>
+                                <i class="fa fa-heart"></i><span id="like_span">Like ('.$numberOfLikes.')</span>
                              ';
                     }else{
                         echo '<button type="button" class="btn-like" id="like" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
-                                <i class="fa fa-heart"></i>
+                                <i class="fa fa-heart"></i><span id="like_span">Like ('.$numberOfLikes.')</span>
                              ';
                     }
                     ?>
-                    <span>Like</span>
+
                 </button>
                     <?php
                     if($isAlreadyBookmarked==true){
                         echo '<button type="button" class="btn-like liked" id="bookmark" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
-                                    <i class="fa fa-bookmark"></i>
+                                    <i class="fa fa-bookmark"></i><span id="bookmark_span">Bookmark ('.$numberOfBookmarks.')</span>
                                  ';
                     }else{
                         echo '<button type="button" class="btn-like" id="bookmark" data-db_id="'.$episode_db_id.'" style="margin-right: 40px">
-                                    <i class="fa fa-bookmark"></i>
+                                    <i class="fa fa-bookmark"></i><span id="bookmark_span">Bookmark ('.$numberOfBookmarks.')</span>
                                  ';
                     }
                     ?>
-                    <span>Bookmark</span>
+
                 </button>
-                <button type="button" class="btn-like" data-db_id="<?php echo $episode_db_id?>" id="share">
+                <button type="button" class="btn-like" data-db_id="<?php echo $episode_db_id?>" id="share" data-toggle="modal" data-target="#modal_share">
                     <i class="fa fa-share-alt"></i>
                     <span>Share</span>
                 </button>
+
 <!--                <a class="p-3 text-muted" style="font-size: 20px;" href="#">Subscribe</a>-->
 <!--                <a class="p-3 text-muted" style="font-size: 20px" href="#">Support</a>-->
             </nav>
@@ -341,8 +384,9 @@
                 <!--        댓글을 작성하는 폼-->
                 <form class="comment_form">
 
-<!--                    이 글이 저장된 db id를 form에 숨겨놓음-->
+<!--                    이 글이 저장된 db id / 게시판 이름을 form에 숨겨놓음-->
                     <input type="hidden" name="episode_db_id" id="episode_db_id" value="<?php echo $episode_db_id?>">
+                    <input type="hidden" id="board_name_comment" value="<?php echo $board_name?>">
 
                     <?php
                     //로그인을 해야 댓글 작성 가능
@@ -371,88 +415,137 @@
     </main><!-- /.container -->
 
 
-    <!--        스크롤 맨 위로 올리는 버튼-->
-<!--    <div class="gotop" style="position: fixed; bottom: 100px; right: 50px">-->
-<!--        <a href class="btn btn-outline-info my-2 my-sm-0">Top</a>-->
-<!--    </div>-->
-<!--    <div class="gobottom" style="position: fixed; bottom: 50px; right: 50px">-->
-<!--        <a href class="btn btn-outline-info my-2 my-sm-0">BTM</a>-->
-<!--    </div>-->
-<script>
-$(document).ready(function(){
 
-    $('.btn-like').click(function(){
-
-        var identity = $(this).attr('id'); //.btn-like 클래스를 가진 element가 3개 있는데, 그 중에 어떤 버튼인지 확인
-        var db_id = $(this).data('db_id'); // episodeInfo table 에서 이 글의 id
-
-        if(identity=='like' | identity=='bookmark'){
-
-            console.log(identity+' btn is clicked. episode_db_id='+db_id);
-
-            $.ajax({
-                url: 'button_server.php', //서버측에서 가져올 페이지
-                type: 'POST', //통신타입 설정. GET 혹은 POST. 아래의 데이터를 get 방식으로 넘겨준다.
-                data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
-                    'button':1,
-                    'identity': identity,
-                    'episode_db_id': db_id
-                },
-                //http 요청 성공 시 발생하는 이벤트
-                success: function(response){
-                    console.log('response: '+response);
-
-                    switch(response){
-                        //success -> 버튼 색 바꿔주기 + 처리 되었다고 알림 띄워주기
-
-                        case 'like':
-                            $('#like').toggleClass('liked');
-                            console.log('like succeeded');
-                            alert('Liked')
-                            break;
-
-                        case 'unlike':
-                            $('#bookmark').toggleClass('liked');
-                            alert('Unliked')
-                            break;
-                        case 'bookmark':
-                            $('#bookmark').toggleClass('liked');
-                            console.log('bookmark succeeded');
-                            alert('Bookmarked')
-                            break;
-
-                        case 'unbookmark':
-                            $('#bookmark').toggleClass('liked');
-                            alert('Unbookmarked')
-                            break;
-
-                        case 'login':
-                            console.log('login is needed');
-                            alert('Please sign-in.')
-                            break;
-                    }
-
-                }
-            });
-
-        }else{
-
-            //url 보여주기
-            console.log('share btn is clicked');
-            alert('Share this Story!')
-        }
-
-    });
-
-
-});
-
-</script>
-
-
+    <a id="footer"></a>
 </body>
 
 
 </html>
+
+<div class="modal fade" id="modal_share" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Share the post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div>
+                <div class="modal-body">
+                    <input style="width: 100%; white-space: nowrap;"
+                            type="text" name="action" id="input_url" value="<?php echo $current_page_url?>" readonly/>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="copy_url_btn" onclick="copy_to_clipboard()" class="btn btn-primary">Copy to Clipboard</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="scripts.js"></script><!--submit 버튼을 클릭했을 때, ajax로 서버에 해당 댓글의 정보를 보낸다-->
 
+<!--클립보드로 복사-->
+<script>
+    function copy_to_clipboard() {
+        var copyText = document.getElementById("input_url");
+        copyText.select();
+        document.execCommand("Copy");
+    }
+</script>
+
+
+<script>
+    $(document).ready(function(){
+
+        $('.btn-like').click(function(){
+
+            let board = $('#board_name').val();
+            var identity = $(this).attr('id'); //.btn-like 클래스를 가진 element가 3개 있는데, 그 중에 어떤 버튼인지 확인
+            var db_id = $(this).data('db_id'); // episodeInfo table 에서 이 글의 id
+
+            console.log('board='+board);
+
+            if(board == 'non-fiction'){
+                board = 'nonfiction';
+            }
+
+            if(identity=='like' || identity=='bookmark'){
+
+                console.log(identity+' btn is clicked. episode_db_id='+db_id);
+
+                $.ajax({
+                    url: 'button_server.php', //서버측에서 가져올 페이지
+                    type: 'POST', //통신타입 설정. GET 혹은 POST. 아래의 데 이터를 get 방식으로 넘겨준다.
+                    data: { //서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
+                        'button':1,
+                        'board' : board,
+                        'identity': identity,
+                        'episode_db_id': db_id
+                    },
+                    //http 요청 성공 시 발생하는 이벤트
+                    success: function(response){
+                        console.log('response: '+response);
+
+                        var result = response.split(';')[0];
+                        var number = response.split(';')[1];
+
+                        console.log('result'+result+'number'+number);
+
+                        switch(result){
+                            //success -> 버튼 색 바꿔주기 + 처리 되었다고 알림 띄워주기
+
+                            case 'like':
+                                $('#like').toggleClass('liked');
+                                console.log('like succeeded');
+                                // alert('Liked')
+                                $("#like_span").text("Like (" + number +")");
+                                break;
+
+                            case 'unlike':
+                                $('#like').toggleClass('liked');
+                                $("#like_span").text("Like (" + number +")");
+                                // alert('Unliked')
+                                break;
+
+
+
+                            case 'bookmark':
+                                $('#bookmark').toggleClass('liked');
+                                $("#bookmark_span").text("Bookmark (" + number +")");
+                                console.log('bookmark succeeded');
+                                // alert('Bookmarked')
+                                break;
+
+                            case 'unbookmark':
+                                $('#bookmark').toggleClass('liked');
+                                $("#bookmark_span").text("Bookmark (" + number +")");
+                                // alert('Unbookmarked')
+                                break;
+
+
+
+                            case 'login':
+                                console.log('login is needed');
+                                alert('Please sign-in.')
+                                break;
+                        }
+
+                    }
+                });
+
+            }else{
+
+                //url 보여주기
+                console.log('share btn is clicked');
+                // alert('Share this Story!')
+            }
+
+        });
+
+
+    });
+
+</script>

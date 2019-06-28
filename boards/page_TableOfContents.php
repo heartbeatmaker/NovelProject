@@ -44,7 +44,15 @@
         $storyDescription=$row['description'];
         $storyGenre=$row['genre'];
 
-        $period=$row['startDate'].' ~ '.$row['lastUpdate'];
+        $startDate = $row['startDate'];
+        $lastUpdate = $row['lastUpdate'];
+
+        if($startDate == $lastUpdate){
+            $period = $startDate;
+        }else{
+            $period = $startDate.'~'.$lastUpdate;
+        }
+
 
         $board_name='fiction';
         $image_file_name = $row['image'];
@@ -65,12 +73,16 @@
         $sql_episodeInfo = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
         $result_episode = mysqli_query($db, $sql_episodeInfo);
 
+        $views='';
+        $numberOfComments='';
         $numberOfLikes=0;
         $numberOfBookmarks=0;
         $number_of_episodes=mysqli_num_rows($result_episode);
 
         while($row_episode = mysqli_fetch_array($result_episode)){
 
+            $views+=$row_episode['numberOfViews'];
+            $numberOfComments+=$row_episode['numberOfComments'];
             $numberOfBookmarks+=$row_episode['bookmark'];
             $numberOfLikes+=$row_episode['numberOfLikes'];
         }
@@ -176,6 +188,17 @@
             <!--                <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='mainPage.php'">Cancel</button>-->
             <!--            </div>-->
             <div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Write
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
+                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
+                    </div>
+                </div>
+
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -216,6 +239,14 @@
 //            $randomNumber = generateRandomInt(25);
 //            $img_src = $randomNumber.'.jpg';
 
+            $image_path = 'upload/'.$image_file_name;
+            if($image_file_name == 'default' || $image_file_name == null || $image_file_name == ''){
+                $randomNumber = generateRandomInt(25);
+                $img_src = $randomNumber.'.jpg';
+
+                $image_path = '../images/bookCover_dummy/'.$img_src;
+            }
+
             //현재 로그인한 사용자와 이 이야기를 쓴 작가가 동일인물인지 확인
             //동일인물이라면, 책 세부내용을 띄워주지 않는다(이미 전 화면에서 확인했으므로)
             if($_SESSION['email']==$author_email){
@@ -223,7 +254,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                        <img src="upload/'.$image_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                        <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">
@@ -254,7 +285,7 @@
                 <div class="card flex-md-row mb-4 box-shadow h-md-250">
 
                     <div style="width:25%; float:left">
-                         <img src="upload/'.$image_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                         <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
                     <div style="width:55%; float:left">
@@ -266,7 +297,7 @@
                             <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
     
                             <div style="margin-top: 10px" class="font-italic; font-weight-bold">'.$number_of_episodes.' Parts</div>
-                            <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfBookmarks.' bookmarks</div>
+                            <div style="margin-top: 10px">'.$views.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments * '.$numberOfBookmarks.' bookmarks</div>
                         </div>
                     </div>
     

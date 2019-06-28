@@ -40,7 +40,7 @@ if(isset($_SESSION['user'])){ //로그인 된 상태라면, 해당 사용자의 
 
 
     //10개씩만 가져온다
-    $sql = "SELECT*FROM novelProject_storyInfo WHERE author_email ='$author_email' LIMIT ".$start_from .",".$results_per_page;
+    $sql = "SELECT*FROM novelProject_storyInfo WHERE author_email ='$author_email' ORDER BY lastUpdate DESC LIMIT ".$start_from .",".$results_per_page;
     $result = mysqli_query($db, $sql);
 
 }else{ //로그인 되어있지 않으면, 로그인 페이지로 보낸다
@@ -108,6 +108,17 @@ if(isset($_POST['signout_btn'])) {
             </div>
 
             <div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Write
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
+                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
+                    </div>
+                </div>
+
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -162,7 +173,16 @@ if(isset($_POST['signout_btn'])) {
                $db_id=$row['id'];
                $title=$row['title'];
 //               $author_username=$row['author_username']; //익명인지 확인할 것
-               $period=$row['startDate'].'~'.$row['lastUpdate'];
+
+               $startDate = $row['startDate'];
+               $lastUpdate = $row['lastUpdate'];
+
+               if($startDate == $lastUpdate){
+                   $period = $startDate;
+               }else{
+                   $period = $startDate.'~'.$lastUpdate;
+               }
+
                $number_of_episode=$row['numberOfEpisode'];
                $img_file_name = $row['image'];
 //               $isCompleted=$row['isCompleted'];
@@ -179,24 +199,38 @@ if(isset($_POST['signout_btn'])) {
                $sql_episode = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
                $result_episode = mysqli_query($db, $sql_episode);
 
+               $views=0;
                $numberOfComments=0;
                $numberOfLikes=0;
+               $numberOfBookmarks=0;
                while($row_episode = mysqli_fetch_array($result_episode)){
 
+                   $views+=$row_episode['numberOfViews'];
                    $numberOfComments+=$row_episode['numberOfComments'];
                    $numberOfLikes+=$row_episode['numberOfLikes'];
+                   $numberOfBookmarks+=$row_episode['bookmark'];
                }
 
+               if($number_of_episode >1){
+                   $number_of_episode .= ' Parts';
+               }else{
+                   $number_of_episode .= ' Part';
+               }
 
-//               $randomNumber = generateRandomInt(25);
-//               $img_src = $randomNumber.'.jpg';
+               $image_path = 'upload/'.$image_file_name;
+               if($image_file_name == 'default' || $image_file_name == null || $image_file_name == ''){
+                   $randomNumber = generateRandomInt(25);
+                   $img_src = $randomNumber.'.jpg';
+
+                   $image_path = '../images/bookCover_dummy/'.$img_src;
+               }
 
                 echo
                     '<div class="list_item" style="margin-bottom: 20px" onclick="location.href=\'page_TableOfContents.php?id='.$db_id.'\'">
                         <div class="card flex-md-row box-shadow h-md-250">
                             
                             <div style="width:25%; float:left">
-                                <img src="upload/'.$img_file_name.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
+                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                                 
                             </div>
                             
@@ -206,8 +240,8 @@ if(isset($_POST['signout_btn'])) {
                                         <a class="text-dark" >'.$title.'</a>
                                     </h3>
                                     <div class="mb-1 text-muted" style="margin-top: 10px">'.$period.'</div>
-                                    <div style="margin-top: 10px">'.$number_of_episode.' Part Stories</div>
-                                    <div style="margin-top: 10px">'.$numberOfLikes.' likes | '.$numberOfComments.' comments</div>
+                                    <div style="margin-top: 10px">'.$number_of_episode.'</div>
+                                    <div style="margin-top: 10px">'.$views.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments * '.$numberOfBookmarks.' bookmarks</div>
                                 </div>
                             </div>
                             

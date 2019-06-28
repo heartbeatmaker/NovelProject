@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    //read_post.php 에서 사용자가 댓글을 썼을 때, 그것을 ajax로 처리하는 코드
+
     // alert('jquery works'); 작동하는지 확인
 
     //사용자가 POST 버튼을 클릭했을 때, ajax를 호출한다
@@ -6,7 +8,8 @@ $(document).ready(function(){
 
         var comment = $('#comment').val();
         var episode_db_id = $('#episode_db_id').val();
-        
+        var board_name = $('#board_name_comment').val();
+
 
         //ajax: 서버에 요청을 하는 방식 중 하나
         //서버와 비동기적으로 통신한다. 비동기: 서버와 통신하는 동안 다른 작업을 할 수 있다는 의미
@@ -17,6 +20,7 @@ $(document).ready(function(){
             data: {//서버에 요청 시 전송할 파라미터. key/value 형식의 객체. data type을 설정할 수 있다(여기선 안함)
                 'save': 1,
                 'comment': comment,
+                'board_name' : board_name,
                 'episode_db_id': episode_db_id
             },
 

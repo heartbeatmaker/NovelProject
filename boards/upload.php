@@ -6,6 +6,7 @@
 //거기서 config.js 수정가능
 
 //require_once '../log/log.php';
+require_once '../session.php';
 require_once '../functions.php'; //랜덤 문자열을 만드는 함수가 여기에 있음
 
 //에러 해결법
@@ -41,6 +42,19 @@ if (isset($_FILES['upload'])) {
     move_uploaded_file($_FILES["upload"]["tmp_name"], $uploadfullPath . $name);
     $url = $imageBaseUrl . $name ;
     $message = 'succeeded';
+
+
+    $image_name_array = array();
+    //세션에 파일 이름을 저장한다
+    if(isset($_SESSION['image_name_array'])){
+        $image_name_array = unserialize($_SESSION['image_name_array']);
+        array_push($image_name_array, $name);
+    }else{
+        $image_name_array[0] = $name;
+    }
+
+    $_SESSION['image_name_array']=serialize($image_name_array);
+
 
 
 }else { $message = '업로드된 파일이 없습니다.'; }

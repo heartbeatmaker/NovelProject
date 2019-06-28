@@ -66,7 +66,7 @@
             $result = mysqli_query($db, $sql);
 
 
-        }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때
+        }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때 - 일단 최신순으로 정렬
 
             //이 소설의 episode를 db에서 가져온다
             //이 소설의 episode가 총 몇 개인지 확인
@@ -80,8 +80,8 @@
             $start_from = ($page - 1)*$results_per_page;
 
 
-            //10개씩만 가져온다
-            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' LIMIT ".$start_from .",".$results_per_page;
+            //10개씩만 가져온다 
+            $sql = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag' ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
             $result = mysqli_query($db, $sql);
 
 
@@ -117,7 +117,7 @@
             //10개씩만 가져온다
             $result = mysqli_query($db, $sql);
 
-        }else{ //아무 분류를 하지 않았을 때
+        }else{ //아무 분류를 하지 않았을 때 - 최신 순으로 정렬
 
             //이 소설의 episode를 db에서 가져온다
             //이 소설의 episode가 총 몇 개인지 확인
@@ -132,7 +132,7 @@
 
 
             //10개씩만 가져온다
-            $sql = "SELECT*FROM ".$sql_tableName." LIMIT ".$start_from .",".$results_per_page;
+            $sql = "SELECT*FROM ".$sql_tableName." ORDER BY date DESC LIMIT ".$start_from .",".$results_per_page;
             $result = mysqli_query($db, $sql);
 
         }
@@ -206,7 +206,7 @@
 
             <div>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Write
                     </button>
                     <div class="dropdown-menu">
@@ -241,7 +241,7 @@
 <main role="main" class="container">
 
     <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 40px; margin-bottom: 30px;">
-        <p>Refine by tag</p>
+        <p>Refine by genre</p>
         <button class="btn btn-outline-success" style="margin:10px"
         onclick="location.href='mainPage.php?board=<?php echo $board_name?>'">All</button>
         <?php
@@ -308,7 +308,6 @@
                 $genre = $row['genre'];
                 $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
 
-                //image 받아야함
                 $title=$row['title'];
                 $author_username=$row['author_username'];
                 $date=$row['date'];
@@ -328,21 +327,29 @@
                 $story_description='';
                 $sql_description = "SELECT*FROM novelProject_storyInfo WHERE id='$story_db_id'";
                 $result_story = mysqli_query($db, $sql_description) or die(mysqli_error($db));
+                $story_img_file_name='';
 
                 if(mysqli_num_rows($result_story)==1){
                     $row_story = mysqli_fetch_array($result_story);
                     $story_title=$row_story['title'];
                     $story_description = $row_story['description'];
+                    $story_img_file_name = $row_story['image'];
                 }
 
 
-                $randomNumber = generateRandomInt(25);
-                $img_src = $randomNumber.'.jpg';
+                $image_path = 'upload/'.$story_img_file_name;
+                if($story_img_file_name == 'default' || $story_img_file_name == null || $story_img_file_name == ''){
+                    $randomNumber = generateRandomInt(25);
+                    $img_src = $randomNumber.'.jpg';
+
+                    $image_path = '../images/bookCover_dummy/'.$img_src;
+                }
+
 
                 echo
                 '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="../images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                            <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
