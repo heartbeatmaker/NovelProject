@@ -47,9 +47,9 @@ connection.connect();
 
 
 //매주 월요일 10시 10분에 아래의 작업을 실행한다
-var work = schedule.scheduleJob({hour:10, minute:10, dayOfWeek:1}, function(){
+// var work = schedule.scheduleJob({hour:10, minute:10, dayOfWeek:1}, function(){
 
-// app.get('/crawling', (req, res) => {
+app.get('/crawling', (req, res) => {// http://192.168.133.131:3000/crawling 로 클라이언트가 접속했을 때
 
     let resultArr_src = [];
     let resultArr_title = [];

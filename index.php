@@ -3,9 +3,20 @@ require_once  '/usr/local/apache/security_files/connect.php';
 require_once 'session.php';
 require_once 'log/log.php';
 require_once 'functions.php';
+require_once 'infinite_scroll.php';
 
 global $db;
 accessLog();
+
+
+
+$sql_getWeeklyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 7 DAY)) and date(date) <= date(subdate(now(), INTERVAL 3 DAY)) ORDER BY numberOfLikes DESC LIMIT 5";
+$result_weeklyData = mysqli_query($db, $sql_getWeeklyData) or die(mysqli_error($db));
+
+
+$sql_getMonthlyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(subdate(now(), INTERVAL 8 DAY)) ORDER BY numberOfLikes DESC LIMIT 5";
+$result_monthlyData = mysqli_query($db, $sql_getMonthlyData) or die(mysqli_error($db));
+
 
 
 if(isset($_POST['signout_btn'])) {
@@ -187,11 +198,11 @@ if(isset($_POST['signout_btn'])) {
 //                    ';
 
                     echo '
-                
                      <img src="images/chat.png" style="width:30px; height:30px;margin-right: 30px"
                      onclick="window.open(\'http://192.168.133.131:3000?id='.$user_db_id.'&name='.$username.'\')">
-                   
                     ';
+
+
                 }
                 ?>
 
@@ -267,37 +278,13 @@ background-image: url('images/book.jpg')">
 
     <main role="main" class="container">
         <div class="row">
-            <div class="col-md-8 blog-main" id="hot_post_list">
+            <div class="col-md-8 blog-main" id="hot_post_list" style="margin-bottom: 50px">
                 <h2 style="margin-bottom: 20px">Popular on ReadMe</h2>
 
-                <?php
+                <?php //10개의 소설 아이템을 화면에 출력한다. $comments 는 infinite_scroll.php의 변수이다.
 
-                for($i=0; $i<10; $i++){
-                    $randomNumber = generateRandomInt(25);
-                    $img_src = $randomNumber.'.jpg';
-
-                    echo
-                    '<div class="list_item" onclick="location.href=\'boards/read_post.php?board=fiction&ep_id=100\'" style="margin-bottom: 20px;">
-                        <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="images/bookCover_dummy/'.$img_src.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
-                            <div class="card-body d-flex flex-column align-items-start">
-                                <strong class="d-inline-block mb-2 text-primary">Fiction - comedy</strong>
-                                <h5 class="mb-0">
-                                    <a class="text-dark">How I met your mother : episode 32</a>
-                                </h5>
-                                <div class="mb-1 text-muted">by jane doe</div>
-                                <p class="card-text mb-auto">description</p>
-                                <div style="margin-top: 10px; width:100%;">
-                                    <div style="float:left; width:80%">30000 views * 1000 likes * 500 comments</div>
-                                    <div class="text-muted" style="float:left; width:20%">Today 18:10:05</div>
-                                </div>
-                            </div>
-             
-                        </div>
-                     </div>';
-                }
-                ?>
-
+                global $first_page;
+                echo $first_page ?>
 
             </div><!-- /.blog-main -->
 
@@ -307,21 +294,34 @@ background-image: url('images/book.jpg')">
                 <div style="margin-top: 50px; margin-bottom:30px">
                     <div>
                         <div><h4 class="font-italic">Weekly Best</h4></div>
-                        <div style="text-align: right; margin-bottom: 10px"><a href="#" class="text-black font-weight-light">More >>></a></div>
+<!--                        <div style="text-align: right; margin-bottom: 10px"><a href="#" class="text-black font-weight-light">More >>></a></div>-->
                     </div>
                     <ul class="list-group mb-3">
                         <?php
-                        for($i=0; $i<5; $i++) {
 
-                                echo '
-                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
+                        //주간 인기글 목록
+                        while($row = mysqli_fetch_array($result_weeklyData)){
+
+                            $board_name='fiction';
+                            $genre = $row['genre'];
+                            $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
+
+                            $title=$row['title'];
+                            $author_username=$row['author_username'];
+                            $story_title=$row['storyTitle'];
+
+
+                            echo '
+                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed" onclick="location.href=\'boards/read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'">
                                     <div>
-                                        <h6 class="my-0">Harry Potter - '.$i.'화</h6>
-                                        <small class="text-muted">J.K. Rowling</small>
+                                        <h6 class="my-0">'.$story_title.' - '.$title.'</h6>
+                                        <small class="text-muted">'.$author_username.'</small>
                                     </div>
-                                    <span class="text-muted">Fantasy</span>
+                                    <span class="text-muted">'.$genre.'</span>
                                 </li>';
                         }
+
+
                         ?>
 <!--                        <li class="list-group-item d-flex justify-content-between bg-light">-->
 <!--                            <div class="text-success">-->
@@ -341,20 +341,34 @@ background-image: url('images/book.jpg')">
                 <div style="margin-top: 50px; margin-bottom:30px">
                     <div>
                         <div><h4 class="font-italic">Monthly Best</h4></div>
-                        <div style="text-align: right; margin-bottom: 10px"><a href="#" class="text-black font-weight-light">More >>></a></div>
+<!--                        <div style="text-align: right; margin-bottom: 10px"><a href="#" class="text-black font-weight-light">More >>></a></div>-->
                     </div>
                     <ul class="list-group mb-3">
                         <?php
-                        for($i=0; $i<5; $i++) {
+
+                        //월간 인기글 목록
+                        while($row = mysqli_fetch_array($result_monthlyData)){
+
+                            $board_name='fiction';
+                            $genre = $row['genre'];
+                            $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
+
+                            $title=$row['title'];
+                            $author_username=$row['author_username'];
+                            $story_title=$row['storyTitle'];
+
+
                             echo '
-                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed">
+                                <li class="list_item_sm list-group-item d-flex justify-content-between lh-condensed" onclick="location.href=\'boards/read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'">
                                     <div>
-                                        <h6 class="my-0">Lord of the Rings - '.$i.'화</h6>
-                                        <small class="text-muted">J.K. Rowling</small>
+                                        <h6 class="my-0">'.$story_title.' - '.$title.'</h6>
+                                        <small class="text-muted">'.$author_username.'</small>
                                     </div>
-                                    <span class="text-muted">Fantasy</span>
+                                    <span class="text-muted">'.$genre.'</span>
                                 </li>';
                         }
+
+
                         ?>
                     </ul>
                 </div>
@@ -424,28 +438,57 @@ background-image: url('images/book.jpg')">
 <script>
     $(document).ready(function() {
 
+        var page = 1;
+        var new_items ='';
+        var currentScroll='';
+
         //무한 스크롤
         $(document).scroll(function() { //스크롤 함수
 
             var currentHeight = $(document).height(); //현재 문서의 높이
 
-            var currentScroll = $(window).scrollTop() + $(window).height(); // 브라우저의 스크롤 위치값
+            currentScroll = $(window).scrollTop() + $(window).height(); // 브라우저의 스크롤 위치값
 
-            if (currentHeight <= currentScroll + 100) { //맨 밑에서 100보다 높은 위치에 도달하면, 다음페이지 로드
-                $.ajax({
-                    type: 'post',
-                    url: 'index/infinite_scroll.php',
-                    data: {
-                        'scroll': 1
-                    },
-                    success: function(data){
-                        $('#hot_post_list').append(data);
-                    }
+            if (currentHeight <= currentScroll + 50) { //맨 밑에서 100보다 높은 위치에 도달하면, 다음페이지 로드
 
-                    //localStorage, sessionStorage 또는 쿠키 등을 사용하여 새롭게 로딩된 콘텐츠 개수를 기억해야 한다
-                });
+                if(page != 'end'){
+
+                    $.ajax({
+                        type: 'post',
+                        url: 'infinite_scroll.php',
+                        dataType: 'JSON',
+                        data: {
+                            'scroll': ++page //첫번째 페이지는 원래 띄워져 있으므로, 2페이지부터 시작한다
+                        },
+                        success: function(data){
+
+                            //json 데이터를 파싱한다
+                            page = data['page']; //지금이 몇 페이지인지
+                            console.log('page='+page);
+
+                            new_items = data['item']; //화면에 띄워줄 목록 아이템
+
+                            $('#hot_post_list').append(new_items);
+
+                            if(page =='end'){
+                                $('#hot_post_list').append('<div style="margin-top:50px; color:darkolivegreen; font-size: 30px; font-family: \'Times New Roman\'">*** End of Results ***</div>');
+                            }
+
+                        }
+
+                        //localStorage, sessionStorage 또는 쿠키 등을 사용하여 새롭게 로딩된 콘텐츠 개수를 기억해야 한다
+                    });
+
+                }
+
             }
         });
+
+
+        window.onbeforeunload = function() {
+            sessionStorage.setItem('page', page);
+            sessionStorage.setItem('scroll', currentScroll)
+        }
 
 
         //스크롤 맨 위로

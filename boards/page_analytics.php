@@ -83,9 +83,34 @@
                 $day_plus = date("Y-m-d", strtotime("+1 days", strtotime($day_plus)));
 
 
+                $dayOfWeek='';
+                switch($i){
+                    case 1:
+                        $dayOfWeek='Mon';
+                        break;
+                    case 2:
+                        $dayOfWeek='Tue';
+                        break;
+                    case 3:
+                        $dayOfWeek='Wed';
+                        break;
+                    case 4:
+                        $dayOfWeek='Thu';
+                        break;
+                    case 5:
+                        $dayOfWeek='Fri';
+                        break;
+                    case 6:
+                        $dayOfWeek='Sat';
+                        break;
+                    case 7:
+                        $dayOfWeek='Sun';
+                        break;
+                }
+
                 //dataPoints라는 배열에 array라는 값을 추가한다 - 다차원 배열
                 //배열 구조: [[1,40], [2,50], [3,14], ... , [23,81]]
-                array_push($dataPoints, array("x" => $i, "y" => $y));
+                array_push($dataPoints, array("label" => $dayOfWeek, "y" => $y));
             }
 
             break;
@@ -147,9 +172,25 @@
 
     <!-- Bootstrap core CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 
     <!-- Custom styles for this template -->
     <link href="../css/dashboard.css" rel="stylesheet">
+
+<!--    date picker-->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $( function() {
+            $( "#datepicker" ).datepicker({
+                changeMonth: true,
+                changeYear: true
+            });
+        } );
+    </script>
+
 </head>
 
 <body>
@@ -202,6 +243,9 @@
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2" style="text-transform: capitalize"><?php echo $sort?> Visitor Statistics</h1>
+
+                <p>Date: <input type="text" id="datepicker"></p>
+
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div class="btn-group mr-2">
                         <button class="btn btn-sm btn-outline-secondary" onclick="location.href='page_analytics.php?sort=daily'">Daily</button>
@@ -229,10 +273,6 @@
         </main>
     </div>
 </div>
-
-<!-- datetimepicker-->
-<script src="https://code.jquery.com/jquery-3.1.1.min.js" type="text/javascript"/>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 
 
 <!-- Icons -->
@@ -271,9 +311,30 @@
                     ?>"
             },
             data: [{
-                type: "area",
+                //area, bar, column 중 선택
+                type: "column",
                 dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
-            }]
+            }],
+            axisY: {
+                title: "Number of Visits",
+                includeZero: false,
+                // suffix: "",
+                lineColor: "#369EAD"
+            },
+            axisX: {
+                title: "<?php
+                    if($sort=='daily'){
+                        echo 'Hour of Day (24 hours)';
+                    }else if($sort=='weekly'){
+                        echo 'Day of Week';
+                    }else if($sort=='monthly'){
+                        echo 'Month of Year';
+                    }
+                    ?>",
+                includeZero: false,
+                // suffix: " m/s",
+                lineColor: "#369EAD"
+            }
         });
         chart.render();
 
