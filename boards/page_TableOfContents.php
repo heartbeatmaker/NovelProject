@@ -265,7 +265,7 @@
                             </h3>';
 
                             if($author_username=='Anonymous'){
-                                echo'<div class="mb-1 text-muted">Anonymous Story</div>';
+                                echo'<div class="mb-1 text-muted">by Anonymous Author</div>';
                             }
                             echo '<div style="margin-top: 10px">'.$storyDescription.'</div>
 

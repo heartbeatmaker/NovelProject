@@ -222,6 +222,13 @@
 
     $num = mysqli_num_rows($result);
 
+
+//    $results_per_page = 10;//한 페이지당 10개로 제한
+//    $number_of_pages = ceil($num/$results_per_page);
+//    //페이지마다 몇번째 행부터 데이터를 출력할 지
+//    $start_from = ($page - 1)*$results_per_page;
+
+
     $comments = '<div id="display_area">';
 
     //각각의 댓글을 출력한다

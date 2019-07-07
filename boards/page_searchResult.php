@@ -86,17 +86,17 @@ switch ($tag){
 
         switch ($search_limit){
             case 'title':
-                //소설 제목에 해당 단어가 포함되어 있는지 확인
+                //제목에 해당 단어가 포함된 글을 조회한다
                 $sql_search_story = "SELECT*FROM novelProject_storyInfo WHERE title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'tnt':
 
                 push_log2('here');
-                //소설 제목, 소설 설명에 해당 단어가 포함되어 있는지 확인
+                //제목, 설명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_story = "SELECT*FROM novelProject_storyInfo WHERE description LIKE '%".$keyword."%' or title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'writer':
-                //소설 작가명에 해당 단어가 포함되어 있는지 확인
+                //작가명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_story = "SELECT*FROM novelProject_storyInfo WHERE author_username LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
         }
@@ -133,15 +133,15 @@ switch ($tag){
 
         switch ($search_limit){
             case 'title':
-                //글 제목에 해당 단어가 포함되어 있는지 확인
+                //제목에 해당 단어가 포함된 글을 조회한다
                 $sql_search_nonfiction = "SELECT*FROM novelProject_nonfiction WHERE title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'tnt':
-                //글 제목, 설명에 해당 단어가 포함되어 있는지 확인
+                //제목, 설명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_nonfiction = "SELECT*FROM novelProject_nonfiction WHERE description LIKE '%".$keyword."%' or title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'writer':
-                //글쓴이명에 해당 단어가 포함되어 있는지 확인
+                //글쓴이명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_nonfiction = "SELECT*FROM novelProject_nonfiction WHERE author_username LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
         }
@@ -177,15 +177,15 @@ switch ($tag){
 
         switch ($search_limit){
             case 'title':
-                //글 제목에 해당 단어가 포함되어 있는지 확인
+                //제목에 해당 단어가 포함된 글을 조회한다
                 $sql_search_community = "SELECT*FROM novelProject_community WHERE title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'tnt':
-                //글 제목, 설명에 해당 단어가 포함되어 있는지 확인
+                //제목, 설명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_community = "SELECT*FROM novelProject_community WHERE description LIKE '%".$keyword."%' or title LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
             case 'writer':
-                //글쓴이명에 해당 단어가 포함되어 있는지 확인
+                //작가명에 해당 단어가 포함된 글을 조회한다
                 $sql_search_community = "SELECT*FROM novelProject_community WHERE author_username LIKE '%".$keyword."%' LIMIT ".$start_from .",".$results_per_page;
                 break;
         }
@@ -262,15 +262,7 @@ if(isset($_POST['signout_btn'])) {
 
 
             <div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Write
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                    </div>
-                </div>
+
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -279,6 +271,7 @@ if(isset($_POST['signout_btn'])) {
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                                 <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>

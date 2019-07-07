@@ -68,10 +68,10 @@
                                 <div class="card-body d-flex flex-column align-items-start">
                                     <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                     <h5 class="mb-0">
-                                        <a class="text-dark">'.$story_title.' : '.$title.'</a>
+                                        <a class="text-dark" style="word-break: break-all">'.$story_title.' : '.$title.'</a>
                                     </h5>
                                     <div class="mb-1 text-muted">by '.$author_username.'</div>
-                                    <p class="card-text mb-auto">'.$story_description.'</p>
+                                    <p class="card-text mb-auto" style="word-break: break-all">'.$story_description.'</p>
                                     <div style="margin-top: 10px; width:100%;">
                                         <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
                                         <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
@@ -166,10 +166,10 @@
                                 <div class="card-body d-flex flex-column align-items-start">
                                     <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                     <h5 class="mb-0">
-                                        <a class="text-dark">'.$story_title.' : '.$title.'</a>
+                                        <a class="text-dark" style="word-break: break-all">'.$story_title.' : '.$title.'</a>
                                     </h5>
                                     <div class="mb-1 text-muted">by '.$author_username.'</div>
-                                    <p class="card-text mb-auto">'.$story_description.'</p>
+                                    <p class="card-text mb-auto" style="word-break: break-all">'.$story_description.'</p>
                                     <div style="margin-top: 10px; width:100%;">
                                         <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
                                         <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>

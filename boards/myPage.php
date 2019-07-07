@@ -105,19 +105,14 @@
             setcookie("session_id", "", time(), "/"); //만료시각=지금시각
         }
 
-        echo "<script>alert(\"Bye! \");</script>";
-        //    header("location: ../index.php"); //redirect
+        $URL_index = "../index.php";
+        echo "
+        <script>
+            alert(\"Bye!\");
+            location.replace('$URL_index');
+        </script>
+        ";
     }
-
-//    //북마크 삭제 버튼을 누르면
-//    if(isset($_POST['btn_delete'])){
-//
-//        //episode db에서 해당 데이터 삭제
-//        $sql_storyInfo_delete = "DELETE FROM novelProject_storyInfo WHERE id='$db_id'";
-//        mysqli_query($db, $sql_storyInfo_delete) or die(mysqli_err($db));
-//
-//        header("location: page_MyStories.php");
-//    }
 
 ?>
 
@@ -160,17 +155,6 @@
             <!--                <button class="btn btn-outline-secondary my-2 my-sm-0" onclick="location.href='mainPage.php'">Cancel</button>-->
             <!--            </div>-->
             <div>
-
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Write
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                    </div>
-                </div>
-
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -179,7 +163,8 @@
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">My Page</a>
+                                <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
+                                <a class="dropdown-item" href="#">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
                         </div>

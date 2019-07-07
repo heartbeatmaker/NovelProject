@@ -211,23 +211,24 @@ if(isset($_POST['signout_btn'])) {
 <!--                </form>-->
 
                 <div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Write
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="boards/page_CreateNewStory.php">Create a New Story</a>
-                            <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>
-                        </div>
-                    </div>
+<!--                    <div class="btn-group">-->
+<!--                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
+<!--                            Write-->
+<!--                        </button>-->
+<!--                        <div class="dropdown-menu">-->
+<!--                            <a class="dropdown-item" href="boards/page_CreateNewStory.php">Create a New Story</a>-->
+<!--                            <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
                     <?php
                     if(isset($_SESSION['email'])){
                         echo '
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="btn-group" style="margin-right: 15px">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="boards/page_MyStories.php">My Stories</a>
                                 <a class="dropdown-item" href="boards/myPage.php">Library</a>
                                 <form method="post" action="index.php"><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
@@ -458,15 +459,15 @@ background-image: url('images/book.jpg')">
                         url: 'infinite_scroll.php',
                         dataType: 'JSON',
                         data: {
-                            'scroll': ++page //첫번째 페이지는 원래 띄워져 있으므로, 2페이지부터 시작한다
+                            'scroll': ++page <?php /*첫번째 페이지는 원래 띄워져 있으므로, 2페이지부터 시작한다*/?>
                         },
                         success: function(data){
 
-                            //json 데이터를 파싱한다
-                            page = data['page']; //지금이 몇 페이지인지
+                            <?php /*json 데이터를 파싱한다*/?>
+                            page = data['page']; <?php /*지금이 몇 페이지인지*/?>
                             console.log('page='+page);
 
-                            new_items = data['item']; //화면에 띄워줄 목록 아이템
+                            new_items = data['item']; <?php /*화면에 띄워줄 목록 아이템*/?>
 
                             $('#hot_post_list').append(new_items);
 
@@ -475,8 +476,8 @@ background-image: url('images/book.jpg')">
                             }
 
                         }
+                        <?php /*localStorage, sessionStorage 또는 쿠키 등을 사용하여 새롭게 로딩된 콘텐츠 개수를 기억해야 한다*/?>
 
-                        //localStorage, sessionStorage 또는 쿠키 등을 사용하여 새롭게 로딩된 콘텐츠 개수를 기억해야 한다
                     });
 
                 }
@@ -491,8 +492,8 @@ background-image: url('images/book.jpg')">
         }
 
 
-        //스크롤 맨 위로
-        var speed = 100; // 스크롤속도
+        <?php /*스크롤 맨 위로 올리는 함수*/?>
+        var speed = 100; <?php /*스크롤속도*/?>
         $(".gotop").css("cursor", "pointer").click(function()
         {
             $('body, html').animate({scrollTop:0}, speed);

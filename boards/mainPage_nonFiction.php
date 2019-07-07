@@ -118,6 +118,8 @@ if(isset($_GET['tag'])){
 
     }else{ //아무 분류를 하지 않았을 때 - 최신순으로 정렬
 
+        $sort = 'New';
+
         //db에서 글을 가져온다
         $sql_episode_only = "SELECT*FROM ".$sql_tableName;
         $result = mysqli_query($db, $sql_episode_only);
@@ -215,6 +217,7 @@ if(isset($_POST['signout_btn'])) {
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                                 <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
@@ -332,10 +335,10 @@ if(isset($_POST['signout_btn'])) {
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
-                                    <a class="text-dark">'.$title.'</a>
+                                    <a class="text-dark" style="word-break: break-all">'.$title.'</a>
                                 </h5>
                                 <div class="mb-1 text-muted">by '.$author_username.'</div>
-                                <p class="card-text mb-auto">'.$description.'</p>
+                                <p class="card-text mb-auto" style="word-break: break-all">'.$description.'</p>
                                 <div style="margin-top: 10px; width:100%;">
                                     <div style="float:left; width:75%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
                                     <div class="text-muted" style="float:left; width:25%">'.$date_modified.'</div>

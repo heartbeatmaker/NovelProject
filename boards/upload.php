@@ -14,13 +14,32 @@ require_once '../functions.php'; //랜덤 문자열을 만드는 함수가 여�
 //이미지를 저장하는 폴더에 777 권한을 부여해야함
 //config.filebrowserUploadMethod = 'form' 있어야함
 
-$uploadfullPath = "/usr/local/apache/htdocs/novel_project/images/ck_uploads/";
-$imageBaseUrl = "/novel_project/images/ck_uploads/";
+$save_dir = "./upload/";
+$name = generateRandomString().'_'.$_FILES['image']['name'];
+$dest = $save_dir.$name;
+
+/*이미지 저장하는 폴더 지정할 때, 절대경로 or 상대경로 상관 없음*/
+//$uploadfullPath = "/usr/local/apache/htdocs/novel_project/images/ck_uploads/"; //절대경로
+$save_dir = "../images/ck_uploads"; //상대경로
+
+//이 주소는 root 디렉토리부터 시작하므로, 아파치 서버의 DocumentRoot를 변경했을 때에는 이 주소도 바꿔줘야 한다
+//ex. /novel_project/images.. -> /images..
+$imageBaseUrl = "/images/ck_uploads/";
+
+
 $CKEditor = $_GET['CKEditor'] ;
 $funcNum = $_GET['CKEditorFuncNum'] ;
 $langCode = $_GET['langCode'] ;
 $url = '' ;
 $message = '';
+
+//파일에 새로운 이름을 붙여서, 원하는 업로드 경로로 옮긴다
+//move_uploaded_file: 서버로 전송된 파일을 저장할 때 사용하는 함수
+if(move_uploaded_file($_FILES['image']['tmp_name'], $dest)){
+    push_log2('succeed');
+}else{
+    push_log2('failed');
+}
 
 
 if (isset($_FILES['upload'])) {
@@ -36,10 +55,11 @@ if (isset($_FILES['upload'])) {
     //파일의 새 이름
     //파일 이름이 겹치는 것을 방지하기 위해, 이름에 랜덤 문자열을 추가한다
     $name = generateRandomString().$_FILES['upload']['name'];
+    $dest = $save_dir."/".$name;
 
     //파일에 새로운 이름을 붙여서, 원하는 업로드 경로로 옮긴다
     //move_uploaded_file: 서버로 전송된 파일을 저장할 때 사용하는 함수
-    move_uploaded_file($_FILES["upload"]["tmp_name"], $uploadfullPath . $name);
+    move_uploaded_file($_FILES["upload"]["tmp_name"], $dest);
     $url = $imageBaseUrl . $name ;
     $message = 'succeeded';
 

@@ -68,6 +68,8 @@
 
         }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때 - 일단 최신순으로 정렬
 
+            $sort = 'New';
+
             //이 소설의 episode를 db에서 가져온다
             //이 소설의 episode가 총 몇 개인지 확인
             $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
@@ -118,6 +120,8 @@
             $result = mysqli_query($db, $sql);
 
         }else{ //아무 분류를 하지 않았을 때 - 최신 순으로 정렬
+
+            $sort = 'New';
 
             //이 소설의 episode를 db에서 가져온다
             //이 소설의 episode가 총 몇 개인지 확인
@@ -205,15 +209,13 @@
 
 
             <div>
+
                 <div class="btn-group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Write
+                    <button type="button" class="btn btn-success" onclick="location.href='page_CreateNewStory.php'">
+                        New Story
                     </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                    </div>
                 </div>
+
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -222,6 +224,7 @@
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                                 <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
@@ -353,10 +356,10 @@
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
-                                    <a class="text-dark">'.$story_title.' : '.$title.'</a>
+                                    <a class="text-dark" style="word-break: break-all">'.$story_title.' : '.$title.'</a>
                                 </h5>
                                 <div class="mb-1 text-muted">by '.$author_username.'</div>
-                                <p class="card-text mb-auto">'.$story_description.'</p>
+                                <p class="card-text mb-auto" style="word-break: break-all">'.$story_description.'</p>
                                 <div style="margin-top: 10px; width:100%;">
                                     <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
                                     <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>

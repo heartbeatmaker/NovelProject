@@ -79,22 +79,8 @@ if(isset($_POST['signout_btn'])) {
                     <a class="blog-header-logo text-dark" href="../index.php">ReadMe</a> | <?php echo $board_name?>
                 </div>
 
-                <form class="form-inline">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <a class="text-muted" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-3"><circle cx="10.5" cy="10.5" r="7.5"></circle><line x1="21" y1="21" x2="15.8" y2="15.8"></line></svg>
-                    </a>
-                </form>
                 <div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Write
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                            <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                        </div>
-                    </div>
+
                     <?php
                     if(isset($_SESSION['email'])){
                         echo '
@@ -103,6 +89,7 @@ if(isset($_POST['signout_btn'])) {
                                     '.$_SESSION['user'].'
                                 </button>
                                 <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                                     <a class="dropdown-item" href="myPage.php">Library</a>
                                     <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                                 </div>
@@ -121,11 +108,11 @@ if(isset($_POST['signout_btn'])) {
 
     <main role="main" style="margin-top: 30px">
 
-        <section class="jumbotron text-center bg-light">
+        <section class="jumbotron text-center bg-dark">
             <div class="container">
-                <h1 class="jumbotron-heading" style="margin-bottom: 20px">Find out the Trend of Published Writings</h1>
-                <p class="lead text-muted">The New York Times Best Sellers of the Week :</p>
-                <p class="lead text-muted">Authoritatively ranked lists of books sold in the United States, sorted by format and genre.</p>
+                <h1 class="jumbotron-heading" style="margin-bottom: 20px; color: lightgrey">Find out the Trend of Published Writings</h1>
+                <p class="lead" style="color:gainsboro">The New York Times Best Sellers of the Week :</p>
+                <p class="lead" style="color:gainsboro">Authoritatively ranked lists of books sold in the United States, sorted by format and genre.</p>
             </div>
         </section>
 

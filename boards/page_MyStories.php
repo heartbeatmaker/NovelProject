@@ -17,6 +17,8 @@ if(!isset($_SESSION['user'])) {
     global $db;
     accessLog();
 
+
+//페이징
 if(!isset($_GET['page'])){
     $page = 1;
 }else{
@@ -24,12 +26,41 @@ if(!isset($_GET['page'])){
 }
 
 
-if(isset($_SESSION['user'])){ //로그인 된 상태라면, 해당 사용자의 story를 db에서 가져온다
+//분류를 위해 각 게시판의 이름을 가져온다
+$sql_board_name = "SELECT name FROM novelProject_boardInfo";
+$result_board_name = mysqli_query($db, $sql_board_name);
+
+$board_name='';
+if(isset($_GET['tag'])){
+    $board_name = $_GET['tag'];
+}else{
+    $board_name = 'fiction';
+}
+
+
+
+$sql_tableName = '';
+$order_by = '';
+
+if($board_name=='fiction'){
+    $sql_tableName = 'novelProject_storyInfo';
+    $order_by = 'lastUpdate';
+
+}else if($board_name=='non-fiction'){
+    $sql_tableName = 'novelProject_nonfiction';
+    $order_by = 'date';
+
+}else if($board_name=='community'){
+    $sql_tableName = 'novelProject_community';
+    $order_by = 'date';
+}
+
+
 
     $author_email=$_SESSION['email'];
 
-    //이 사용자의 story가 총 몇 개인지 확인
-    $sql_checkNumberOfRows = "SELECT*FROM novelProject_storyInfo WHERE author_email ='$author_email'";
+    //이 사용자의 story or 게시물이 총 몇 개인지 확인
+    $sql_checkNumberOfRows = "SELECT*FROM ".$sql_tableName." WHERE author_email ='$author_email'";
     $result = mysqli_query($db, $sql_checkNumberOfRows);
     $number_of_results = mysqli_num_rows($result); //결과 행의 갯수
 
@@ -40,12 +71,13 @@ if(isset($_SESSION['user'])){ //로그인 된 상태라면, 해당 사용자의 
 
 
     //10개씩만 가져온다
-    $sql = "SELECT*FROM novelProject_storyInfo WHERE author_email ='$author_email' ORDER BY lastUpdate DESC LIMIT ".$start_from .",".$results_per_page;
+    $sql = "SELECT*FROM ".$sql_tableName." WHERE author_email ='$author_email' ORDER BY ".$order_by." DESC LIMIT ".$start_from .",".$results_per_page;
     $result = mysqli_query($db, $sql);
 
-}else{ //로그인 되어있지 않으면, 로그인 페이지로 보낸다
-    header("location: ../login/login.php"); //redirect
-}
+
+
+
+
 
 
 if(isset($_POST['signout_btn'])) {
@@ -65,8 +97,15 @@ if(isset($_POST['signout_btn'])) {
         setcookie("session_id", "", time(), "/"); //만료시각=지금시각
     }
 
-    echo "<script>alert(\"Bye! \");</script>";
-//    header("location: ../index.php"); //redirect
+
+    $URL_index = "../index.php";
+    echo "
+    <script>
+        alert(\"Bye!\");
+        location.replace('$URL_index');
+    </script>
+    ";
+
 }
 ?>
 
@@ -109,16 +148,6 @@ if(isset($_POST['signout_btn'])) {
 
             <div>
 
-                <div class="btn-group">
-                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Write
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                        <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                    </div>
-                </div>
-
                 <?php
                 if(isset($_SESSION['email'])){
                     echo '
@@ -127,6 +156,7 @@ if(isset($_POST['signout_btn'])) {
                                 '.$_SESSION['user'].'
                             </button>
                             <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">My Stories</a>
                                 <a class="dropdown-item" href="myPage.php">Library</a>
                                 <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                             </div>
@@ -147,20 +177,69 @@ if(isset($_POST['signout_btn'])) {
 
 <main role="main" class="container" style="width:80% ;margin-top: 50px; margin-bottom: 100px">
 
+
+    <div class="jumbotron p-3 text-white rounded bg-secondary" style="margin-top: 40px; margin-bottom: 30px;">
+
+        <div>Refine by Board
+            <?php
+
+            //게시판별 분류
+            //각 게시판의 이름을 버튼형식으로 나열한다
+            while($row_board_name = mysqli_fetch_array($result_board_name)){
+
+                if($row_board_name[0] != 'bestseller'){
+
+                    //이미 선택된 버튼의 색을 active로 바꿔준다
+                    if($row_board_name[0]==$board_name){
+                        echo '<button class="btn btn-outline-warning active" style="margin:10px">'.$row_board_name[0].'</button>';
+
+                    }else{
+                        echo '<button class="btn btn-outline-warning" style="margin:10px"
+                   onclick="location.href=\'page_MyStories.php?tag='.$row_board_name[0].'\'">'.$row_board_name[0].'</button>';
+                    }
+
+
+                }
+
+            }
+            ?>
+        </div>
+    </div>
+
+
     <div class="row">
 
         <div class="col-md-10" style="margin:0px auto">
 
             <div style="width:100%; text-align: right">
-                <button class="btn btn-info" style="margin-bottom: 30px;"
-                onclick="location.href='page_CreateNewStory.php'">+ New Story</button>
+                <?php
+                if($board_name == 'fiction'){
+                    echo'
+                    <button class="btn btn-info" style="margin-top: 20px; margin-bottom: 20px;"
+                    onclick="location.href=\'page_CreateNewStory.php\'">+ New Story</button>
+                    ';
+                }else{
+                    echo'
+                    <button class="btn btn-info" style="margin-top: 20px; margin-bottom: 20px;"
+                    onclick="location.href=\'page_writeNewPost.php?board='.$board_name.'\'">+ New Post</button>
+                    ';
+                }
+                ?>
             </div>
             <h4>
                 <?php
                 if($number_of_results>1){
-                    echo $number_of_results.' Stories';
+                    if($board_name == 'fiction'){
+                        echo $number_of_results.' Stories';
+                    }else{
+                        echo $number_of_results.' Posts';
+                    }
                 }else{
-                    echo $number_of_results.' Story';
+                    if($board_name == 'fiction'){
+                        echo $number_of_results.' Story';
+                    }else{
+                        echo $number_of_results.' Post';
+                    }
                 }
                 ?>
             </h4>
@@ -170,63 +249,57 @@ if(isset($_POST['signout_btn'])) {
 
            while($row = mysqli_fetch_array($result)){
 
-               $db_id=$row['id'];
-               $title=$row['title'];
-//               $author_username=$row['author_username']; //익명인지 확인할 것
+               //fiction
+               if($board_name == 'fiction'){
 
-               $startDate = $row['startDate'];
-               $lastUpdate = $row['lastUpdate'];
+                   $db_id=$row['id'];
+                   $title=$row['title'];
 
-               if($startDate == $lastUpdate){
-                   $period = $startDate;
-               }else{
-                   $period = $startDate.'~'.$lastUpdate;
-               }
+                   $startDate = $row['startDate'];
+                   $lastUpdate = $row['lastUpdate'];
 
-               $number_of_episode=$row['numberOfEpisode'];
-               $img_file_name = $row['image'];
-//               $isCompleted=$row['isCompleted'];
+                   if($startDate == $lastUpdate){
+                       $period = $startDate;
+                   }else{
+                       $period = $startDate.'~'.$lastUpdate;
+                   }
 
-
-//               if($isCompleted=='Y'){
-//                   $isCompleted='Completed';
-//               }else{
-//                   $isCompleted='inProgress';
-//               }
+                   $number_of_episode=$row['numberOfEpisode'];
+                   $img_file_name = $row['image'];
 
 
-               //이 story에 총 몇 개의 like와 comment가 달렸는지 계산한다
-               $sql_episode = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
-               $result_episode = mysqli_query($db, $sql_episode);
+                   //이 story에 총 몇 개의 like와 comment가 달렸는지 계산한다
+                   $sql_episode = "SELECT*FROM novelProject_episodeInfo WHERE story_db_id ='$db_id'";
+                   $result_episode = mysqli_query($db, $sql_episode);
 
-               $views=0;
-               $numberOfComments=0;
-               $numberOfLikes=0;
-               $numberOfBookmarks=0;
-               while($row_episode = mysqli_fetch_array($result_episode)){
+                   $views=0;
+                   $numberOfComments=0;
+                   $numberOfLikes=0;
+                   $numberOfBookmarks=0;
+                   while($row_episode = mysqli_fetch_array($result_episode)){
 
-                   $views+=$row_episode['numberOfViews'];
-                   $numberOfComments+=$row_episode['numberOfComments'];
-                   $numberOfLikes+=$row_episode['numberOfLikes'];
-                   $numberOfBookmarks+=$row_episode['bookmark'];
-               }
+                       $views+=$row_episode['numberOfViews'];
+                       $numberOfComments+=$row_episode['numberOfComments'];
+                       $numberOfLikes+=$row_episode['numberOfLikes'];
+                       $numberOfBookmarks+=$row_episode['bookmark'];
+                   }
 
-               if($number_of_episode >1){
-                   $number_of_episode .= ' Parts';
-               }else{
-                   $number_of_episode .= ' Part';
-               }
+                   if($number_of_episode >1){
+                       $number_of_episode .= ' Parts';
+                   }else{
+                       $number_of_episode .= ' Part';
+                   }
 
-               $image_path = 'upload/'.$image_file_name;
-               if($image_file_name == 'default' || $image_file_name == null || $image_file_name == ''){
-                   $randomNumber = generateRandomInt(25);
-                   $img_src = $randomNumber.'.jpg';
+                   $image_path = 'upload/'.$image_file_name;
+                   if($image_file_name == 'default' || $image_file_name == null || $image_file_name == ''){
+                       $randomNumber = generateRandomInt(25);
+                       $img_src = $randomNumber.'.jpg';
 
-                   $image_path = '../images/bookCover_dummy/'.$img_src;
-               }
+                       $image_path = '../images/bookCover_dummy/'.$img_src;
+                   }
 
-                echo
-                    '<div class="list_item" style="margin-bottom: 20px" onclick="location.href=\'page_TableOfContents.php?id='.$db_id.'\'">
+                   echo
+                       '<div class="list_item" style="margin-bottom: 20px" onclick="location.href=\'page_TableOfContents.php?id='.$db_id.'\'">
                         <div class="card flex-md-row box-shadow h-md-250">
                             
                             <div style="width:25%; float:left">
@@ -251,6 +324,59 @@ if(isset($_POST['signout_btn'])) {
                             
                         </div>   
                     </div>';
+
+               }else{ //non-fiction or community 게시판에서 쓴 글
+
+                   $title=$row['title'];
+                   $description=$row['description'];
+                   $genre = $row['genre'];
+                   $episode_db_id=$row['id'];//클릭 시 get 방식으로 보내주기
+                   $image_name = $row['image'];
+                   $date=$row['date'];
+                   $numberOfLikes = $row['numberOfLikes'];
+                   $numberOfComments = $row['numberOfComments'];
+                   $numberOfViews = $row['numberOfViews'];
+
+                   $date_modified = explode(' ',$date)[0];
+                   $today=date("Y-m-d");
+
+                   if($date_modified==$today){
+                       $date_modified = 'Today '.explode(' ',$date)[1];
+                   }
+
+
+                   $image_path = '../images/ck_uploads/'.$image_name;
+                   if($image_name == 'default' || $image_name == null || $image_name == ''){
+                       $randomNumber = generateRandomInt(30);
+                       $img_src = 'dummy ('.$randomNumber.').jpg';
+
+                       $image_path = '../images/bookCover_dummy/'.$img_src;
+                   }
+
+
+                   echo
+                       '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
+                        <div class="card flex-md-row box-shadow h-md-250">
+                            <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
+                            <div class="card-body d-flex flex-column align-items-start">
+                                <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
+                                <h5 class="mb-0">
+                                    <a class="text-dark" style="word-break: break-all">'.$title.'</a>
+                                </h5>
+                                <p class="card-text mb-auto" style="word-break: break-all">'.$description.'</p>
+                                <div style="margin-top: 10px; width:100%;">
+                                    <div style="float:left; width:75%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
+                                    <div class="text-muted" style="float:left; width:25%">'.$date_modified.'</div>
+                                </div>
+                            </div>
+             
+                        </div>
+                     </div>';
+
+               }
+
+
+
             }
 
 //                         <div style="width:30%; float:left">
@@ -271,41 +397,41 @@ if(isset($_POST['signout_btn'])) {
                             if($i==$page){ //이 페이지에 들어온 상태일 때 - active
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
                         //마지막 페이지로 가는 버튼
-                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="page_MyStories.php?page='.$number_of_pages.'">Last</a></li>';
+                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                     }else if($page<=$number_of_pages-2){ //사용자가 전체페이지-2 번째 페이지까지 클릭한 경우
 
                         //첫 페이지로 가는 버튼
-                        echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=1">First</a></li><li class="page-item">. . .</li>';
+                        echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                         // 사용자가 클릭한 페이지 앞뒤로 2개씩, 총 5개 페이지를 보여준다
                         for ($i=$page-2; $i<=$page+2; $i++){
                             if($i==$page){
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
                         //마지막 페이지로 가는 버튼
-                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="page_MyStories.php?page='.$number_of_pages.'">Last</a></li>';
+                        echo '<li class="page-item">. . .</li><li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page='.$number_of_pages.'">Last</a></li>';
 
                     }else{ //사용자가 마지막 페이지 or 마지막 전 페이지를 클릭한 경우
 
                         //첫 페이지로 가는 버튼
-                        echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=1">First</a></li><li class="page-item">. . .</li>';
+                        echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=1">First</a></li><li class="page-item">. . .</li>';
 
                         //마지막에서 5개 페이지를 보여준다
                         for ($i=$number_of_pages-4; $i<=$number_of_pages; $i++){
                             if($i==$page){
                                 echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                             }else{
-                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=' . $i . '">'. $i .'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                             }
                         }
 
@@ -316,7 +442,7 @@ if(isset($_POST['signout_btn'])) {
                         if($i==$page){
                             echo '<li class="page-item active"><a class="page-link">'. $i .'</a></li>';
                         }else{
-                            echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?page=' . $i . '">'. $i .'</a></li>';
+                            echo '<li class="page-item"><a class="page-link" href="page_MyStories.php?tag='.$board_name.'&page=' . $i . '">'. $i .'</a></li>';
                         }
                     }
                 }

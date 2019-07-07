@@ -230,19 +230,19 @@
 
 </head>
 <body>
-    <div class="container" style="margin-top: 20px">
+    <div style="padding:20px 40px; background-color: #343a40">
         <header class="blog-header">
             <div class="row flex-nowrap justify-content-between align-items-center">
-                <div class="col-8" >
-                    <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
+                <div class="col-8">
+                    <a class="blog-header-logo" style="color:lightgrey; font-size: 30px; font-family: Times New Roman; text-transform: initial" href="../index.php">ReadMe</a>
                     <?php
                     if($board_name=='fiction'){
                      echo'
-                     <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id='.$story_db_id.'">
-                        | '.$storyTitle.'</a> by '.$author_username;
+                     <a class="blog-header-logo" style="color:lightgrey; font-size: 30px; font-family: Times New Roman; text-transform: initial" href="page_TableOfContents.php?id='.$story_db_id.'">
+                        | '.$storyTitle.'</a>';
                     }else{
                         echo '
-                        <a class="blog-header-logo text-dark" style="font-size: 30px; font-family: Times New Roman; text-transform: initial" href="mainPage_nonFiction.php?board='.$board_name.'">
+                        <a class="blog-header-logo" style="color:lightgrey; font-size: 30px; font-family: Times New Roman; text-transform: initial" href="mainPage_nonFiction.php?board='.$board_name.'">
                         | '.$board_name.'</a>
                         ';
                     }
@@ -250,24 +250,16 @@
                 </div>
 
                 <div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Write
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="page_CreateNewStory.php">Create a New Story</a>
-                            <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
-                        </div>
-                    </div>
 
                     <?php
                     if(isset($_SESSION['email'])){
                         echo '
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     '.$_SESSION['user'].'
                                 </button>
                                 <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="page_MyStories.php">My Stories</a>
                                     <a class="dropdown-item" href="myPage.php">Library</a>
                                     <form method="post" action=""><button class="dropdown-item" name="signout_btn" value="true">Sign-out</button></form>
                                 </div>
@@ -300,7 +292,7 @@
                 //    ?>
 
 <!--                <div style="font-size: 20px; font-family: 'Times New Roman'; color: grey;">Lord of the Rings by JRR Tolkin</div>-->
-                <h3 style="border-bottom:1px solid rgba(1,1,1,0.2); font-family: Arial, Helvetica, sans-serif"><?php echo $episodeTitle?></h3>
+                <h3 style="border-bottom:1px solid rgba(1,1,1,0.2); font-family: Arial, Helvetica, sans-serif; word-break:break-all;"><?php echo $episodeTitle?></h3>
                 <?php
 
                 //글쓴이만 수정삭제 가능
@@ -315,7 +307,10 @@
                 }
                 ?>
 
-                   <div style="color: #b2b2b2; margin-top: 20px;">
+                    <div style="margin-top: 20px;">
+                        <p>by <?php echo $author_username?><br></p>
+                    </div>
+                    <div style="color: #b2b2b2; margin-top: 10px;">
                         <p>Published: <?php echo $publishedTime?>
                         <br>
                         <?php
@@ -323,8 +318,8 @@
                             echo $row['editTime']." [edit]";
                         }
                         ?></p>
-                   </div>
-                <div style="margin-top: 70px">
+                    </div>
+                <div style="margin-top: 70px; word-break:break-all;">
                     <?php echo $content?>
                 </div>
             </div>
@@ -396,7 +391,7 @@
                             <label for="comment">Comments</label>
                             <textarea name="comment" id="comment" cols="30" rows="5"></textarea>
                         </div>
-                        <button type="button" id="submit_btn" >POST</button>
+                        <button type="button" id="submit_btn" style="background-color: #343a40" >POST</button>
                         <button type="button" id="update_btn" style="display: none;">UPDATE</button>
                      ';}else{
                         echo'<div>You must sign-in to leave comments</div>';
