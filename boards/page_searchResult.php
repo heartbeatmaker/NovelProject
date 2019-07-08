@@ -293,7 +293,7 @@ if(isset($_POST['signout_btn'])) {
     <div class="jumbotron p-3 text-white rounded bg-dark" style="margin-top: 40px; margin-bottom: 30px;">
         <p style="font-size: 20px">Search Options</p>
 
-        <div style="margin-bottom: 10px">Search Range
+        <div style="margin-bottom: 10px">Filter
         <?php
 
         //검색 범위 설정
@@ -319,7 +319,7 @@ if(isset($_POST['signout_btn'])) {
         }
         ?>
         </div>
-        <div>Search by Board
+        <div>Board
         <?php
 
         //게시판별 분류

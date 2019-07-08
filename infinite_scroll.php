@@ -9,7 +9,7 @@
 
     //원래 7일로 제한하려고 했는데, 데이터가 적어서 30일로 늘림
     //최근 30일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
-    $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) ORDER BY numberOfLikes DESC LIMIT 10";
+    $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 10";
     $result = mysqli_query($db, $sql_getData) or die(mysqli_error($db));
 
 
@@ -95,7 +95,7 @@
         global $db;
 
         //최근 30일동안 쌓인 소설 데이터의 개수를 조회한다
-        $sql_num = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now())";
+        $sql_num = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ";
         $result_num = mysqli_query($db, $sql_num);
         $number_of_results = mysqli_num_rows($result_num);//결과 행의 개수
 
@@ -107,7 +107,7 @@
         push_log('count:'.$number_of_results.' start_from:'.$start_from);
 
         //최근 30일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
-        $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+        $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
         $result_getData = mysqli_query($db, $sql_getData) or die(mysqli_error($db));
         $num = mysqli_num_rows($result_getData);
 

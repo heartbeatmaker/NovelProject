@@ -209,7 +209,7 @@ function getBrowser() {
 //    $date = date("Ymd"); // 오늘날짜
 //    $time = date("H:i:s"); // 시간
 //    $userID = $userID ? $userID : '';
-//    $sql ="select count(*) from rb_accessLog where ipaddr='".$access_ip."' and date='".$date."'";
+//    $sql ="(*) from rb_accessLog where ipaddr='".$access_ip."' and date='".$date."'";
 //    $result=mysql_query($sql);
 //    if($row=mysql_fetch_row($result)){
 //        if($row[0] == 0){ // 오늘 접속날짜 기록이 없으면

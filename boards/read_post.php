@@ -226,6 +226,12 @@
     <script src="global.js"></script>
 <!--    <link rel="stylesheet" href="../css/comment.css">-->
     <link rel="stylesheet" href="../css/comment_styles.css">
+    <style>
+        img{
+            max-width: 100%;
+            height: auto !important;
+        }
+    </style>
 
 
 </head>
@@ -391,7 +397,7 @@
                             <label for="comment">Comments</label>
                             <textarea name="comment" id="comment" cols="30" rows="5"></textarea>
                         </div>
-                        <button type="button" id="submit_btn" style="background-color: #343a40" >POST</button>
+                        <button type="button" id="submit_btn" style="background-color: #343a40">POST</button>
                         <button type="button" id="update_btn" style="display: none;">UPDATE</button>
                      ';}else{
                         echo'<div>You must sign-in to leave comments</div>';
@@ -400,8 +406,10 @@
                 </form>
                 <?php //db에 저장되어 있는 댓글을 화면에 출력한다. $comments 는 server.php의 변수이다.
 
-                global $comments;
-                echo $comments ?>
+//                global $comments;
+//                echo $comments
+                ?>
+
             </div>
 
 

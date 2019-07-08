@@ -176,9 +176,6 @@ if(isset($_POST['btn_submit'])){
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
 
-    <!--    dataTables-->
-    <link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
-
     <!--    stylesheets-->
     <link href="../css/write/form-validation.css" rel="stylesheet">
 
@@ -275,15 +272,13 @@ if(isset($_POST['btn_submit'])){
                 </div>
             </div>
 
+            <div id="warning"></div>
             <button class="btn btn-info btn-lg btn-block" name="btn_submit" value="true" type="submit" style="margin-top: 50px">Publish</button>
         </form>
 
 
 
-
-
     </div><!-- /.blog-main -->
-
 
 
 </main><!-- /.container -->

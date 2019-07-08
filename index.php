@@ -10,11 +10,11 @@ accessLog();
 
 
 
-$sql_getWeeklyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 7 DAY)) and date(date) <= date(subdate(now(), INTERVAL 3 DAY)) ORDER BY numberOfLikes DESC LIMIT 5";
+$sql_getWeeklyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 7 DAY)) and date(date) <= date(subdate(now(), INTERVAL 3 DAY)) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 5";
 $result_weeklyData = mysqli_query($db, $sql_getWeeklyData) or die(mysqli_error($db));
 
 
-$sql_getMonthlyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(subdate(now(), INTERVAL 8 DAY)) ORDER BY numberOfLikes DESC LIMIT 5";
+$sql_getMonthlyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(subdate(now(), INTERVAL 8 DAY)) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 5";
 $result_monthlyData = mysqli_query($db, $sql_getMonthlyData) or die(mysqli_error($db));
 
 
