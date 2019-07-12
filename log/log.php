@@ -44,6 +44,26 @@ function push_log2($log_str){
 }
 
 
+function push_log3($log_str){
+    //일별로 로그 쌓을 것
+
+    global $log_filename;
+
+    $now        = getdate();
+    $source = basename($_SERVER['PHP_SELF']);
+
+    $today      = $now['year']."/".$now['mon']."/".$now['mday'];
+    $now_time   = $now['hours'].":".$now['minutes'].":".$now['seconds'];
+    $now        = $today." ".$now_time;
+    $filep = fopen("/usr/local/apache/htdocs/novel_project/log/log3.txt", "a");
+    if(!$filep) {
+        die("can't open log file : ". $log_filename);
+    }
+    fputs($filep, "{$now} : ({$source}) : {$log_str}\n\r");
+    fclose($filep);
+}
+
+
 function push_searchLog($log_str){
     //일별로 로그 쌓을 것
 

@@ -51,6 +51,9 @@ app.get('/crawling', (req, res) => {// http://192.168.133.131:3000/crawling 로 
     let resultArr_author = [];
     let resultArr_desc = [];
 
+    // https://www.goodreads.com/list/show/121316.Best_Non_Fiction_of_2018
+    // https://www.goodreads.com/shelf/show/non-fiction
+    // https://www.goodreads.com/list/show/134.Best_Non_Fiction_no_biographies_
 
     let url = "https://www.goodreads.com/list/show/134.Best_Non_Fiction_no_biographies_";
 
@@ -106,15 +109,21 @@ app.get('/crawling', (req, res) => {// http://192.168.133.131:3000/crawling 로 
         //     id += 1;
         // }
 
+        var id=858;
         for(var i=0; i<resultArr_title.length; i++){
 
-            var info={title: resultArr_title[i], author_username: resultArr_author[i]};
+            // var info={title: resultArr_title[i], author_username: resultArr_author[i]};
 
-            connection.query('INSERT INTO novelProject_nonfiction SET ?', info, function(err, result) {
-                if(err){
-                    console.log('mysql err: '+err);
-                }
+            connection.query('UPDATE novelProject_nonfiction SET title = ? WHERE id = ?', [resultArr_title[i], id], function(err, result){
             });
+
+            id += 1;
+
+            // connection.query('INSERT INTO novelProject_nonfiction SET ?', info, function(err, result) {
+            //     if(err){
+            //         console.log('mysql err: '+err);
+            //     }
+            // });
         }
 
 

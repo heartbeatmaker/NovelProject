@@ -69,6 +69,8 @@ if(isset($_GET['tag'])){
 
     }else{ //인기순 or 최신순 분류 없이 태그만 설정했을 때 - 일단 최신순으로 정렬
 
+        $sort = 'New';
+
         //db에서 글을 가져온다
         $sql_episode_tag = "SELECT*FROM ".$sql_tableName." WHERE genre='$tag'";
         $result = mysqli_query($db, $sql_episode_tag);
@@ -267,9 +269,9 @@ if(isset($_POST['signout_btn'])) {
             <div style="margin-bottom: 50px">
                 <h4 style="float:left; width: 80%;"> <?php
                     if($number_of_results>1){
-                        echo $number_of_results.' Stories';
+                        echo $number_of_results.' Posts';
                     }else{
-                        echo $number_of_results.' Story';
+                        echo $number_of_results.' Post';
                     }
                     ?></h4>
                 <div class="btn-group" style="float:left; width:20%">
@@ -331,8 +333,10 @@ if(isset($_POST['signout_btn'])) {
                 echo
                     '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250" >
-                            <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
-                            <div class="card-body d-flex flex-column align-items-start">
+                           <div style="width:23%; float:left">
+                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>   
+                           </div>
+                           <div style="width:77%; float:left" class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
                                     <a class="text-dark" style="word-break: break-all">'.$title.'</a>

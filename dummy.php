@@ -65,65 +65,6 @@ global $db;
 
 
 
-//$id = 708;
-//$title ='';
-//
-//for($i=0; $i<250; $i++){
-//
-//    $sql_title = "SELECT author_username FROM novelProject_nonfiction WHERE id='$id'";
-//    $result_title = mysqli_query($db, $sql_title);
-//    if(mysqli_num_rows($result_title) ==1){
-//        $title = mysqli_fetch_array($result_title)['author_username'];
-//    }
-//    $title_noSpace = trim($title);
-//    $title_modified = str_replace('\'','',$title_noSpace);
-//
-//
-//    $sql_update = "UPDATE novelProject_nonfiction SET author_username ='$title_modified' WHERE id ='$id'";
-//    $result = mysqli_query($db, $sql_update);
-//
-//    $id += 1;
-//}
-
-
-$id = 708;
-$title ='';
-$author_name = '';
-
-for($i=0; $i<250; $i++){
-
-    $sql_author = "SELECT author_username FROM novelProject_nonfiction WHERE id='$id'";
-    $result_author = mysqli_query($db, $sql_author);
-    if(mysqli_num_rows($result_author) ==1){
-        $author_name = mysqli_fetch_array($result_author)['author_username'];
-    }
-    $author_email = explode(' ', $author_name)[0];
-    $author_email_lowercase = strtolower($author_email).'@gmail.com';
-
-
-    $sql_update = "UPDATE novelProject_nonfiction SET author_email ='$author_email_lowercase' WHERE id ='$id'";
-    $result = mysqli_query($db, $sql_update);
-
-    $id += 1;
-}
-
-
-
-//$id = 1047;
-//$title ='';
-//
-//for($i=0; $i<100; $i++){
-//
-//
-//    $image = mt_rand(1, 25).'.jpg';
-//
-//    $sql_update = "UPDATE novelProject_storyInfo SET image ='$image' WHERE id ='$id'";
-//    $result = mysqli_query($db, $sql_update);
-//
-//    $id += 1;
-//}
-
-
 $content = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis magna magna. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Maecenas auctor neque consectetur leo laoreet iaculis. Cras at auctor sapien, a auctor purus. Ut at libero sollicitudin, tempus turpis efficitur, tempor urna. Aenean a efficitur ipsum. Suspendisse tellus metus, eleifend nec eleifend non, euismod et velit. Maecenas id felis vitae orci venenatis vehicula in sed augue. Nulla facilisi. Nam non leo a ipsum rutrum dapibus vel sed odio. Integer eget hendrerit arcu, sit amet tincidunt mi. Praesent vestibulum odio ut diam ullamcorper congue. Pellentesque massa purus, rutrum vel nisl at, semper euismod nibh. Phasellus quis quam nisi. Integer tellus urna, laoreet ac purus sodales, dictum ornare orci. Curabitur mi nulla, pharetra non nibh ac, vestibulum suscipit sapien.
     
     Quisque pulvinar diam at felis vulputate, non gravida dui varius. Integer eu magna rutrum, bibendum tellus eu, pretium tellus. Vivamus eu velit et ligula sollicitudin fermentum. Suspendisse nec erat sapien. In hac habitasse platea dictumst. Morbi bibendum nibh purus, et accumsan diam scelerisque id. Fusce urna felis, tincidunt vel magna ut, aliquet ullamcorper justo. Nullam vel sodales nisl. Nam posuere ligula a metus euismod, eu aliquet sapien pulvinar. Quisque nec lacinia neque, sit amet condimentum nisl.
@@ -183,6 +124,123 @@ $content = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent qu
     Ut mattis molestie nulla, a congue purus placerat id. Sed scelerisque risus vel blandit sollicitudin. In massa neque, sagittis ac nulla sagittis, viverra vulputate est. Vestibulum a neque semper, euismod quam vel, efficitur lorem. Nunc vitae enim ante. Interdum et malesuada fames ac ante ipsum primis in faucibus. Sed turpis velit, sodales in pulvinar sit amet, mollis lobortis nunc. Maecenas ante dolor, feugiat viverra mi non, pretium rutrum ligula. Curabitur in congue sem.
     
     Morbi at odio ut elit sagittis vehicula vel ut nisi. Vestibulum sed dui sed dui mollis mattis in et lorem. Suspendisse potenti. Fusce ultrices sem leo, id porttitor urna lobortis luctus. Vivamus in sapien accumsan, laoreet quam quis, tincidunt turpis. Phasellus at nibh a erat vehicula ornare. Vivamus sodales commodo aliquet. Integer auctor rutrum est sit amet viverra. Pellentesque egestas urna non magna lacinia, aliquam viverra urna suscipit. Etiam dictum, quam ut dapibus maximus, nibh risus elementum elit, et aliquet lorem ligula et leo. Nam pulvinar porttitor arcu. Mauris euismod velit eu condimentum blandit. Donec vehicula congue viverra.';
+
+
+
+
+$id = 156;
+
+//db에 저장된 fiction 장르를 가져온다
+$board_name = 'community';
+
+$genre ='';
+$sql_genre = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
+$result_genre = mysqli_query($db, $sql_genre);
+
+//string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
+if(mysqli_num_rows($result_genre)==1){
+    $row_genre = mysqli_fetch_array($result_genre);
+    $genre_string = $row_genre['category'];
+}
+$genre_split_array = explode(';', $genre_string);
+
+
+for($i=0; $i<248; $i++){
+
+
+//    $title ='';
+//    $sql_title = "SELECT title FROM novelProject_nonfiction WHERE id='$id'";
+//    $result_title = mysqli_query($db, $sql_title);
+//    if(mysqli_num_rows($result_title) ==1){
+//        $title = mysqli_fetch_array($result_title)['title'];
+//    }
+//    $title_noSpace = trim($title);
+//    $title_modified = str_replace('\'','',$title_noSpace);
+//    $title_modified_final = explode('(', $title)[0];
+
+
+    $max_num = count($genre_split_array)-1;
+    $random_number = mt_rand(0, $max_num);
+    $random_genre = $genre_split_array[$random_number];
+
+    $description = 'Quisque pulvinar diam at felis vulputate, non gravida dui varius.';
+    $date = date('Y/m/d H:i:s', strtotime( '-'.mt_rand(0,1800).' days'));
+    $numberOfComments = 0;
+
+    $rand_num = mt_rand(1, 9);
+    $numberOfViews = mt_rand($rand_num*500, $rand_num*500+600);
+    $numberOfLikes = mt_rand($rand_num*40, $rand_num*40+100);
+    $bookmark = mt_rand($rand_num*10, $rand_num*10+30);
+
+
+//    $sql_update = "UPDATE novelProject_nonfiction SET title='$title_noSpace' WHERE id ='$id'";
+
+    $sql_update = "UPDATE novelProject_nonfiction SET genre='$random_genre', title='haha' WHERE id ='$id' or die(mysqli_error($db))";
+
+    $result = mysqli_query($db, $sql_update);
+
+//    $id += 1;
+}
+
+
+//$id = 708;
+//$title ='';
+//
+//for($i=0; $i<250; $i++){
+//
+//    $sql_title = "SELECT author_username FROM novelProject_nonfiction WHERE id='$id'";
+//    $result_title = mysqli_query($db, $sql_title);
+//    if(mysqli_num_rows($result_title) ==1){
+//        $title = mysqli_fetch_array($result_title)['author_username'];
+//    }
+//    $title_noSpace = trim($title);
+//    $title_modified = str_replace('\'','',$title_noSpace);
+//
+//
+//    $sql_update = "UPDATE novelProject_nonfiction SET author_username ='$title_modified' WHERE id ='$id'";
+//    $result = mysqli_query($db, $sql_update);
+//
+//    $id += 1;
+//}
+
+
+//$id = 708;
+//$title ='';
+//$author_name = '';
+//
+//for($i=0; $i<250; $i++){
+//
+//    $sql_author = "SELECT author_username FROM novelProject_nonfiction WHERE id='$id'";
+//    $result_author = mysqli_query($db, $sql_author);
+//    if(mysqli_num_rows($result_author) ==1){
+//        $author_name = mysqli_fetch_array($result_author)['author_username'];
+//    }
+//    $author_email = explode(' ', $author_name)[0];
+//    $author_email_lowercase = strtolower($author_email).'@gmail.com';
+//
+//
+//    $sql_update = "UPDATE novelProject_nonfiction SET author_email ='$author_email_lowercase' WHERE id ='$id'";
+//    $result = mysqli_query($db, $sql_update);
+//
+//    $id += 1;
+//}
+
+
+
+//$id = 1047;
+//$title ='';
+//
+//for($i=0; $i<100; $i++){
+//
+//
+//    $image = mt_rand(1, 25).'.jpg';
+//
+//    $sql_update = "UPDATE novelProject_storyInfo SET image ='$image' WHERE id ='$id'";
+//    $result = mysqli_query($db, $sql_update);
+//
+//    $id += 1;
+//}
+
 
 
 

@@ -352,8 +352,10 @@
                 echo
                 '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                         <div class="card flex-md-row box-shadow h-md-250">
-                            <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
-                            <div class="card-body d-flex flex-column align-items-start">
+                            <div style="width:20%; float:left">
+                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                            </div>
+                            <div style="width:80%; float:left" class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
                                     <a class="text-dark" style="word-break: break-all">'.$story_title.' : '.$title.'</a>
