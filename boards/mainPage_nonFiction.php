@@ -263,7 +263,7 @@ if(isset($_POST['signout_btn'])) {
     </div>
 
     <div class="row" style="margin-top: 50px">
-        <div class="col-md-8 blog-main" id="hot_post_list" style="margin:0px auto;">
+        <div class="col-md-9 blog-main" id="hot_post_list" style="margin:0px auto;">
             <div style="margin-bottom: 50px">
                 <h4 style="float:left; width: 80%;"> <?php
                     if($number_of_results>1){
@@ -330,7 +330,7 @@ if(isset($_POST['signout_btn'])) {
 
                 echo
                     '<div class="list_item" onclick="location.href=\'read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
-                        <div class="card flex-md-row box-shadow h-md-250">
+                        <div class="card flex-md-row box-shadow h-md-250" >
                             <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:150px; height:150px; margin:10px" alt="Card image cap"/>
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>

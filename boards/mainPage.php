@@ -270,7 +270,7 @@
     </div>
 
     <div class="row" style="margin-top: 50px">
-        <div class="col-md-8 blog-main" id="hot_post_list" style="margin:0px auto;">
+        <div class="col-md-9 blog-main" id="hot_post_list" style="margin:0px auto;">
             <div style="margin-bottom: 50px">
                 <h4 style="float:left; width: 80%;"> <?php
                     if($number_of_results>1){

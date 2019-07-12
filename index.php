@@ -9,7 +9,6 @@ global $db;
 accessLog();
 
 
-
 $sql_getWeeklyData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 7 DAY)) and date(date) <= date(subdate(now(), INTERVAL 3 DAY)) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 5";
 $result_weeklyData = mysqli_query($db, $sql_getWeeklyData) or die(mysqli_error($db));
 
@@ -318,7 +317,7 @@ background-image: url('images/book.jpg')">
                                         <h6 class="my-0">'.$story_title.' - '.$title.'</h6>
                                         <small class="text-muted">'.$author_username.'</small>
                                     </div>
-                                    <span class="text-muted">'.$genre.'</span>
+                                    <span class="text-muted" style="margin-left: 10px">'.$genre.'</span>
                                 </li>';
                         }
 
@@ -365,7 +364,7 @@ background-image: url('images/book.jpg')">
                                         <h6 class="my-0">'.$story_title.' - '.$title.'</h6>
                                         <small class="text-muted">'.$author_username.'</small>
                                     </div>
-                                    <span class="text-muted">'.$genre.'</span>
+                                    <span class="text-muted" style="margin-left: 10px">'.$genre.'</span>
                                 </li>';
                         }
 

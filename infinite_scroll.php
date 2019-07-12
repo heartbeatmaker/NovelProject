@@ -7,9 +7,8 @@
 
     global $db;
 
-    //원래 7일로 제한하려고 했는데, 데이터가 적어서 30일로 늘림
-    //최근 30일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
-    $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 10";
+    //최근 5일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
+    $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 5 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT 10";
     $result = mysqli_query($db, $sql_getData) or die(mysqli_error($db));
 
 
@@ -54,7 +53,7 @@
 
         $image_path = 'boards/upload/'.$story_img_file_name;
         if($story_img_file_name == 'default' || $story_img_file_name == null || $story_img_file_name == ''){
-            $randomNumber = generateRandomInt(25);
+            $randomNumber = mt_rand(1, 25);
             $img_src = $randomNumber.'.jpg';
 
             $image_path = 'images/bookCover_dummy/'.$img_src;
@@ -64,7 +63,7 @@
         $first_page .=
             '<div class="list_item" onclick="location.href=\'boards/read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                             <div class="card flex-md-row box-shadow h-md-250">
-                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:120px; height:180px; margin:10px 0px 0px 10px" alt="Card image cap"/>
                                 <div class="card-body d-flex flex-column align-items-start">
                                     <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                     <h5 class="mb-0">
@@ -73,8 +72,8 @@
                                     <div class="mb-1 text-muted">by '.$author_username.'</div>
                                     <p class="card-text mb-auto" style="word-break: break-all">'.$story_description.'</p>
                                     <div style="margin-top: 10px; width:100%;">
-                                        <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
-                                        <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
+                                        <div style="float:left; width:70%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
+                                        <div class="text-muted" style="float:left; width:30%">'.$date_modified.'</div>
                                     </div>
                                 </div>
                  
@@ -106,8 +105,8 @@
 
         push_log('count:'.$number_of_results.' start_from:'.$start_from);
 
-        //최근 30일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
-        $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 30 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
+        //최근 5일동안의 소설 데이터 중에, 10개를 인기순으로 가져온다
+        $sql_getData = "SELECT*FROM novelProject_episodeInfo WHERE date(date) >= date(subdate(now(), INTERVAL 5 DAY)) and date(date) <= date(now()) and numberOfLikes >= 50 ORDER BY numberOfLikes DESC LIMIT ".$start_from .",".$results_per_page;
         $result_getData = mysqli_query($db, $sql_getData) or die(mysqli_error($db));
         $num = mysqli_num_rows($result_getData);
 
@@ -162,7 +161,7 @@
             $new_page .=
                 '<div class="list_item" onclick="location.href=\'boards/read_post.php?board='.$board_name.'&ep_id='.$episode_db_id.'\'" style="margin-bottom: 20px;">
                             <div class="card flex-md-row box-shadow h-md-250">
-                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:130px; height:190px; margin:10px" alt="Card image cap"/>
+                                <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:120px; height:180px; margin:10px" alt="Card image cap"/>
                                 <div class="card-body d-flex flex-column align-items-start">
                                     <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                     <h5 class="mb-0">
@@ -171,8 +170,8 @@
                                     <div class="mb-1 text-muted">by '.$author_username.'</div>
                                     <p class="card-text mb-auto" style="word-break: break-all">'.$story_description.'</p>
                                     <div style="margin-top: 10px; width:100%;">
-                                        <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
-                                        <div class="text-muted" style="float:left; width:20%">'.$date_modified.'</div>
+                                        <div style="float:left; width:70%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfComments.' comments</div>
+                                        <div class="text-muted" style="float:left; width:30%">'.$date_modified.'</div>
                                     </div>
                                 </div>
                  

@@ -219,7 +219,7 @@
 
     <div class="row">
 
-        <div class="col-md-10" style="margin:0px auto">
+        <div class="col-md-11" style="margin:0px auto">
 
 <!--            <div style="width:100%; text-align: right">-->
 <!--                <button class="btn btn-outline-success" style="margin-bottom: 30px; padding-left: 20px; padding-right: 30px"">+ Add to List</button>-->
@@ -279,7 +279,7 @@
                          <img src="'.$image_path.'" style="border-radius: 0 3px 3px 0; width:110px; height:150px; margin: 20px 50px 20px" alt="Card image cap"/>
                     </div>
     
-                    <div style="width:55%; float:left">
+                    <div style="width:75%; float:left">
                         <div class="card-body d-flex flex-column align-items-start">
                             <h3 class="mb-0">
                                 <a class="text-dark">'.$storyTitle.'</a>
@@ -292,9 +292,7 @@
                         </div>
                     </div>
     
-                    <div style="width:30%; float:left">
-                        
-                    </div>
+                   
                </div>
                 ';
             }

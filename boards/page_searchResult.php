@@ -347,7 +347,7 @@ if(isset($_POST['signout_btn'])) {
 
 
     <div class="row" style="margin-top: 50px">
-        <div class="col-md-8 blog-main" id="hot_post_list" style="margin:0px auto;">
+        <div class="col-md-9 blog-main" id="hot_post_list" style="margin:0px auto;">
             <div style="margin-bottom: 50px">
                 <h4 style="float:left; width: 80%;"> <?php
                     if($number_of_results>1){
@@ -374,7 +374,6 @@ if(isset($_POST['signout_btn'])) {
                     $description = $row['description'];
                     $author_username=$row['author_username'];
                     $period = $row['startDate'].'~'.$row['lastUpdate'];
-                    $numberOfEpisodes = $row['numberOfEpisodes'];
 
 
                     //이 story의 총 조회수, 좋아요 수, 북마크 수를 계산한다
@@ -384,6 +383,9 @@ if(isset($_POST['signout_btn'])) {
                     $numberOfViews=0;
                     $numberOfLikes=0;
                     $numberOfBookmarks=0;
+
+                    //storyInfo에서 numberOfEpisode 데이터 사용하지 말 것. 수치가 정확하지 않음
+                    $numberOfEpisodes = mysqli_num_rows($result_episode);
 
                     while($row_episode = mysqli_fetch_array($result_episode)){
 
@@ -402,13 +404,13 @@ if(isset($_POST['signout_btn'])) {
                             <div class="card-body d-flex flex-column align-items-start">
                                 <strong class="d-inline-block mb-2 text-primary">'.$genre.'</strong>
                                 <h5 class="mb-0">
-                                    <a class="text-dark">'.$title.' : '.$title.'</a>
+                                    <a class="text-dark">'.$title.'</a>
                                 </h5>
                                 <div class="mb-1 text-muted">by '.$author_username.'</div>
                                 <p class="card-text mb-auto">'.$description.'</p>
                                 <div style="margin-top: 10px; width:100%;">
-                                    <div style="float:left; width:65%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfBookmarks.' bookmarks</div>
-                                    <div class="text-muted" style="float:left; width:35%">'.$period.'</div>
+                                    <div style="float:left; width:80%">'.$numberOfViews.' views * '.$numberOfLikes.' likes * '.$numberOfBookmarks.' bookmarks</div>
+                                    <div class="text-muted" style="float:left; width:20%">'.$numberOfEpisodes.' Parts</div>
                                 </div>
                             </div>
              

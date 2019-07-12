@@ -141,9 +141,9 @@ if(isset($_POST['signout_btn'])) {
                     while($row_book = mysqli_fetch_array($result_book)){
 
                         if($genre == $row_book['genre']){
-                            echo '
+                            echo 'blog_test_data
                             <div class="col-md-4">
-                                <div class="card mb-4 shadow-sm" >
+                                <div class="card mb-4 shadow-sm" style="height: 530px;">
                                     <img src="'.$row_book['img_src'].'" width="160" height="250" background="#55595c" color="#eceeef" text="Thumbnail"
                                     style="margin:0px auto; padding-top: 20px"/>
                                     <div class="card-body">
