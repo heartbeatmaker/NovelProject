@@ -135,13 +135,16 @@ if(isset($_POST['signout_btn'])) {
 
                     //금주 베스트셀러 목록을 가져온다
                     //월요일에 크롤링을 하기 때문에, interval을 today(=정수)로 설정하면 월요일~오늘까지의 자료를 가져올 수 있다
-                    $sql_book = "SELECT*FROM novelProject_bestseller WHERE listed_date BETWEEN DATE_SUB(now(), INTERVAL ".$today." DAY) AND NOW()";
+//                    $sql_book = "SELECT*FROM novelProject_bestseller WHERE listed_date BETWEEN DATE_SUB(now(), INTERVAL ".$today." DAY) AND NOW()";
+
+                    //오늘 날짜의 데이터만 가져오는 코드
+                    $sql_book = "SELECT*FROM novelProject_bestseller WHERE listed_date > CURRENT_DATE( )";
                     $result_book = mysqli_query($db, $sql_book);
 
                     while($row_book = mysqli_fetch_array($result_book)){
 
                         if($genre == $row_book['genre']){
-                            echo 'blog_test_data
+                            echo '
                             <div class="col-md-4">
                                 <div class="card mb-4 shadow-sm" style="height: 530px;">
                                     <img src="'.$row_book['img_src'].'" width="160" height="250" background="#55595c" color="#eceeef" text="Thumbnail"

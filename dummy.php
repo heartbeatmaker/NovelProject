@@ -5,6 +5,15 @@ require_once 'log/log.php';
 require_once 'functions.php';
 
 global $db;
+//2019-07-11 17:40:05
+
+//for($i=0; $i<10; $i++){
+//    $random_time = mt_rand(0,23).":".str_pad(mt_rand(0,59), 2, "0", STR_PAD_LEFT).":".str_pad(mt_rand(0,59), 2, "0", STR_PAD_LEFT);
+//    $string = '2019-7-10 '.$random_time;
+//    $datetime = strtotime($string);
+//    $datetime_final = date('Y-m-d H:i:s',$datetime);
+//
+//}
 
 
 
@@ -128,24 +137,24 @@ $content = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent qu
 
 
 
-$id = 156;
+//$id = 156;
+//
+////db에 저장된 fiction 장르를 가져온다
+//$board_name = 'community';
+//
+//$genre ='';
+//$sql_genre = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
+//$result_genre = mysqli_query($db, $sql_genre);
+//
+////string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
+//if(mysqli_num_rows($result_genre)==1){
+//    $row_genre = mysqli_fetch_array($result_genre);
+//    $genre_string = $row_genre['category'];
+//}
+//$genre_split_array = explode(';', $genre_string);
 
-//db에 저장된 fiction 장르를 가져온다
-$board_name = 'community';
 
-$genre ='';
-$sql_genre = "SELECT*FROM novelProject_boardInfo WHERE name='$board_name'";
-$result_genre = mysqli_query($db, $sql_genre);
-
-//string으로 이어서 가져온 장르를 개별로 분할하여 화면에 출력한다
-if(mysqli_num_rows($result_genre)==1){
-    $row_genre = mysqli_fetch_array($result_genre);
-    $genre_string = $row_genre['category'];
-}
-$genre_split_array = explode(';', $genre_string);
-
-
-for($i=0; $i<248; $i++){
+//for($i=0; $i<248; $i++){
 
 
 //    $title ='';
@@ -159,28 +168,28 @@ for($i=0; $i<248; $i++){
 //    $title_modified_final = explode('(', $title)[0];
 
 
-    $max_num = count($genre_split_array)-1;
-    $random_number = mt_rand(0, $max_num);
-    $random_genre = $genre_split_array[$random_number];
-
-    $description = 'Quisque pulvinar diam at felis vulputate, non gravida dui varius.';
-    $date = date('Y/m/d H:i:s', strtotime( '-'.mt_rand(0,1800).' days'));
-    $numberOfComments = 0;
-
-    $rand_num = mt_rand(1, 9);
-    $numberOfViews = mt_rand($rand_num*500, $rand_num*500+600);
-    $numberOfLikes = mt_rand($rand_num*40, $rand_num*40+100);
-    $bookmark = mt_rand($rand_num*10, $rand_num*10+30);
+//    $max_num = count($genre_split_array)-1;
+//    $random_number = mt_rand(0, $max_num);
+//    $random_genre = $genre_split_array[$random_number];
+//
+//    $description = 'Quisque pulvinar diam at felis vulputate, non gravida dui varius.';
+//    $date = date('Y/m/d H:i:s', strtotime( '-'.mt_rand(0,1800).' days'));
+//    $numberOfComments = 0;
+//
+//    $rand_num = mt_rand(1, 9);
+//    $numberOfViews = mt_rand($rand_num*500, $rand_num*500+600);
+//    $numberOfLikes = mt_rand($rand_num*40, $rand_num*40+100);
+//    $bookmark = mt_rand($rand_num*10, $rand_num*10+30);
 
 
 //    $sql_update = "UPDATE novelProject_nonfiction SET title='$title_noSpace' WHERE id ='$id'";
 
-    $sql_update = "UPDATE novelProject_nonfiction SET genre='$random_genre', title='haha' WHERE id ='$id' or die(mysqli_error($db))";
-
-    $result = mysqli_query($db, $sql_update);
+//    $sql_update = "UPDATE novelProject_nonfiction SET genre='$random_genre', title='haha' WHERE id ='$id' or die(mysqli_error($db))";
+//
+//    $result = mysqli_query($db, $sql_update);
 
 //    $id += 1;
-}
+//}
 
 
 //$id = 708;

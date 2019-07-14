@@ -249,7 +249,7 @@ io.on('connection', (socket) => {
         if(isNew){
             entrance_message = socket.username+" entered the room.";
         }else{
-            entrance_message = socket.username+" is back to the room.";
+            // entrance_message = socket.username+" is back to the room.";
         }
         //나를 제외한 그룹멤버에게 이 이벤트를 전달한다
         socket.broadcast.to(socket.room_id).emit('user entered', entrance_message);
